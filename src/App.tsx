@@ -1,7 +1,13 @@
-import { Typography } from '@mui/material';
+import Routes from './common/components/Routes';
+import Navbar from './components/molecules/Navbar';
 
 function App() {
-  return <Typography variant="h1">Hello World</Typography>;
+  return (
+    <>
+      <Navbar />
+      <Routes />
+    </>
+  );
 }
 
 export default App;
