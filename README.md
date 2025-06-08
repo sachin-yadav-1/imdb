@@ -4,6 +4,6 @@
 # Installation
 npm install
 
-# Serve Project
+# Serve Project Locally
 npm run dev
 ```
