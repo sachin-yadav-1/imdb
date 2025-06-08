@@ -24,50 +24,42 @@ interface UseMovieFormProps {
 export const useMovieForm = ({ mode, movieId }: UseMovieFormProps) => {
   const dispatch = useAppDispatch();
   const { form, loading, error, entities } = useSelector((state: RootState) => state.movies);
-  const { entities: actorEntities } = useSelector((state: RootState) => state.actors);
-  const { entities: producerEntities } = useSelector((state: RootState) => state.producers);
 
   useEffect(() => {
     if (mode === 'edit' && movieId && entities[movieId]) {
       const movie = entities[movieId];
+
       dispatch(populateFormForEdit(movie));
 
       if (movie.actor_ids && movie.actor_ids.length > 0) {
-        const existingActors = movie.actor_ids.map((id) => actorEntities[id]).filter(Boolean);
-
-        if (existingActors.length > 0) {
-          dispatch(
-            searchActorsThunk({
-              filters: {
-                id: {
-                  op: 'in',
-                  val: movie.actor_ids,
-                },
+        dispatch(
+          searchActorsThunk({
+            filters: {
+              id: {
+                op: 'in',
+                val: movie.actor_ids,
               },
-            })
-          );
-        }
+            },
+          })
+        );
       }
 
       if (movie.producer?.id) {
-        const existingProducer = producerEntities[movie.producer.id];
-        if (existingProducer) {
-          dispatch(
-            searchProducersThunk({
-              filters: {
-                id: {
-                  op: 'eq',
-                  val: movie.producer.id,
-                },
+        dispatch(
+          searchProducersThunk({
+            filters: {
+              id: {
+                op: 'eq',
+                val: movie.producer.id,
               },
-            })
-          );
-        }
+            },
+          })
+        );
       }
     } else if (mode === 'create') {
       dispatch(initializeFormForCreate());
     }
-  }, [dispatch, mode, movieId, entities, actorEntities, producerEntities]);
+  }, [dispatch, mode, movieId, entities]);
 
   const updateField = useCallback(
     (field: keyof MovieFormData, value: unknown) => {
