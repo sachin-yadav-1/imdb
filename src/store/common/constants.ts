@@ -7,4 +7,9 @@ export const commonInitialState: CommonInitialState = {
     duration: 3000,
     type: 'success',
   },
+
+  modal: {
+    createActor: false,
+    createProducer: false,
+  },
 };

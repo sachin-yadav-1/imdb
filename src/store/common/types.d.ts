@@ -5,4 +5,8 @@ export interface CommonInitialState {
     duration: number;
     type: 'success' | 'error';
   };
+  modal: {
+    createActor: boolean;
+    createProducer: boolean;
+  };
 }

@@ -8,11 +8,33 @@ export interface Actor {
   created_at: string;
 }
 
+export interface PersonFormData {
+  name: string;
+  bio: string;
+  dob: string;
+  gender: string;
+}
+
+export interface PersonFormErrors {
+  name?: string;
+  bio?: string;
+  dob?: string;
+  gender?: string;
+}
+
 export interface ActorMovie {
   id: number;
   actor_id: number;
   movie_id: number;
   created_at: string;
+}
+
+export interface PersonFormState {
+  data: PersonFormData;
+  errors: PersonFormErrors;
+  touched: Record<keyof PersonFormData, boolean>;
+  isValid: boolean;
+  isDirty: boolean;
 }
 
 export interface ActorsInitialState {
@@ -27,4 +49,5 @@ export interface ActorsInitialState {
     create: string | null;
     search: string | null;
   };
+  createForm: PersonFormState;
 }

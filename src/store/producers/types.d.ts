@@ -1,8 +1,9 @@
+import type { PersonFormState } from '../actors/types';
+
 export interface Producer {
   id: number;
   name: string;
   bio: string;
-  image: string;
   dob: string;
   gender: string;
   created_at: string;
@@ -20,4 +21,5 @@ export interface ProducersInitialState {
     create: string | null;
     search: string | null;
   };
+  createForm: PersonFormState;
 }
