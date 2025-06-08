@@ -1,4 +1,4 @@
-import type { ActorMovie } from '../actors/types';
+import type { Actor } from '../actors/types';
 import type { Producer } from '../producers/types';
 
 export interface Movie {
@@ -8,10 +8,15 @@ export interface Movie {
   release_date: string;
   poster: string;
   producer?: Producer;
-  producer_id: number;
-  actor_movie?: ActorMovie[];
   actor_ids?: number[];
   created_at?: string;
+}
+
+export interface MovieWithActorsAndProducers extends Movie {
+  producer_id?: Producer;
+  actor_movie?: Array<{
+    actors: Actor;
+  }>;
 }
 
 export interface MoviesInitialState {
@@ -24,9 +29,15 @@ export interface MoviesInitialState {
     update: boolean;
   };
   error: {
-    fetch: string | null;
-    fetchSingle: string | null;
-    create: string | null;
-    update: string | null;
+    fetch: Error | null;
+    fetchSingle: Error | null;
+    create: Error | null;
+    update: Error | null;
+  };
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
   };
 }

@@ -15,4 +15,10 @@ export const moviesInitialState: MoviesInitialState = {
     create: null,
     update: null,
   },
+  pagination: {
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+  },
 };
