@@ -2,7 +2,9 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { movieFormInitialState, moviesInitialState } from '../constants';
 import { validateMovieForm } from '../helpers/validateForm';
 import { createMovieThunk } from '../thunks/createMovieThunk';
+import { updateMovieThunk } from '../thunks/updateMovieThunk';
 import { fetchMoviesPaginatedThunk } from '../thunks/fetchPaginatedMoviesThunk';
+import { fetchSingleMovieThunk } from '../thunks/fetchSingleMovieThunk';
 import type { Movie, MovieFormData } from '../types';
 
 const moviesSlice = createSlice({
@@ -47,6 +49,36 @@ const moviesSlice = createSlice({
         ...movieFormInitialState,
       };
     },
+
+    populateFormForEdit: (state, action: PayloadAction<Movie>) => {
+      const movie = action.payload;
+      state.form.data = {
+        name: movie.name,
+        plot: movie.plot,
+        release_date: movie.release_date,
+        poster: movie.poster || '',
+        producer_id: movie.producer?.id || null,
+        actor_ids: movie.actor_ids || [],
+        posterFile: null,
+      };
+
+      state.form.errors = {};
+      state.form.touched = {
+        name: false,
+        plot: false,
+        release_date: false,
+        poster: false,
+        producer_id: false,
+        actor_ids: false,
+        posterFile: false,
+      };
+      state.form.isValid = true;
+      state.form.isDirty = false;
+    },
+
+    initializeFormForCreate: (state) => {
+      state.form = { ...movieFormInitialState };
+    },
   },
   extraReducers: (builder) => {
     // FETCH PAGINATED MOVIES
@@ -81,6 +113,28 @@ const moviesSlice = createSlice({
         state.error.fetch = action.payload as Error;
       });
 
+    // FETCH SINGLE MOVIE
+    builder
+      .addCase(fetchSingleMovieThunk.pending, (state) => {
+        state.loading.fetchSingle = true;
+        state.error.fetchSingle = null;
+      })
+      .addCase(fetchSingleMovieThunk.fulfilled, (state, action) => {
+        state.loading.fetchSingle = false;
+        state.error.fetchSingle = null;
+
+        const movie = action.payload as Movie;
+        state.entities[movie.id] = movie;
+
+        if (!state.ids.includes(movie.id)) {
+          state.ids.push(movie.id);
+        }
+      })
+      .addCase(fetchSingleMovieThunk.rejected, (state, action) => {
+        state.loading.fetchSingle = false;
+        state.error.fetchSingle = action.payload as Error;
+      });
+
     // CREATE MOVIE
     builder.addCase(createMovieThunk.pending, (state) => {
       state.loading.create = true;
@@ -93,7 +147,9 @@ const moviesSlice = createSlice({
       const movie = action.payload as Movie;
 
       state.entities[movie.id] = movie;
-      state.ids.push(movie.id);
+      if (!state.ids.includes(movie.id)) {
+        state.ids.push(movie.id);
+      }
 
       state.form = {
         ...movieFormInitialState,
@@ -103,8 +159,37 @@ const moviesSlice = createSlice({
       state.loading.create = false;
       state.error.create = action.payload as Error;
     });
+
+    // UPDATE MOVIE
+    builder.addCase(updateMovieThunk.pending, (state) => {
+      state.loading.update = true;
+      state.error.update = null;
+    });
+    builder.addCase(updateMovieThunk.fulfilled, (state, action) => {
+      state.loading.update = false;
+      state.error.update = null;
+
+      const movie = action.payload as Movie;
+      state.entities[movie.id] = movie;
+
+      state.form = {
+        ...movieFormInitialState,
+      };
+    });
+    builder.addCase(updateMovieThunk.rejected, (state, action) => {
+      state.loading.update = false;
+      state.error.update = action.payload as Error;
+    });
   },
 });
 
-export const { clearErrors, updateFormField, setFormTouched, resetForm, validateForm } = moviesSlice.actions;
+export const {
+  clearErrors,
+  updateFormField,
+  setFormTouched,
+  resetForm,
+  validateForm,
+  populateFormForEdit,
+  initializeFormForCreate,
+} = moviesSlice.actions;
 export default moviesSlice.reducer;

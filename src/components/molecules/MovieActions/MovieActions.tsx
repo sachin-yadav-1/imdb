@@ -10,7 +10,7 @@ interface MovieActionsProps {
 const MovieActions: React.FC<MovieActionsProps> = ({ movieId }) => {
   return (
     <CardActions>
-      <Link to={`/movie/${movieId}`}>
+      <Link to={`/edit-movie/${movieId}`}>
         <IconButton size="large">
           <EditIcon />
         </IconButton>
