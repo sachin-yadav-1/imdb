@@ -4,6 +4,12 @@ export interface ApiResponse<T> {
   success: boolean;
 }
 
+export interface ApiSingleResponse<T> {
+  data: T | null;
+  error: string | null;
+  success: boolean;
+}
+
 export interface Pagination {
   total: number;
   limit: number;

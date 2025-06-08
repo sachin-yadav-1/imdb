@@ -1,7 +1,9 @@
-import { createSlice } from '@reduxjs/toolkit';
-import { moviesInitialState } from '../constants';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import { movieFormInitialState, moviesInitialState } from '../constants';
+import { validateMovieForm } from '../helpers/validateForm';
+import { createMovieThunk } from '../thunks/createMovieThunk';
 import { fetchMoviesPaginatedThunk } from '../thunks/fetchPaginatedMoviesThunk';
-import type { Movie } from '../types';
+import type { Movie, MovieFormData } from '../types';
 
 const moviesSlice = createSlice({
   name: 'movies',
@@ -9,6 +11,41 @@ const moviesSlice = createSlice({
   reducers: {
     clearErrors: (state) => {
       state.error = moviesInitialState.error;
+    },
+
+    updateFormField: (state, action: PayloadAction<{ field: keyof MovieFormData; value: any }>) => {
+      const { field, value } = action.payload;
+      state.form.data[field] = value as never;
+      state.form.touched[field] = true;
+      state.form.isDirty = true;
+
+      const errors = validateMovieForm(state.form.data);
+      state.form.errors = errors;
+      state.form.isValid = Object.keys(errors).length === 0;
+    },
+
+    validateForm: (state) => {
+      const errors = validateMovieForm(state.form.data);
+      state.form.errors = errors;
+      state.form.isValid = Object.keys(errors).length === 0;
+
+      Object.keys(state.form.touched).forEach((field) => {
+        state.form.touched[field as keyof MovieFormData] = true;
+      });
+    },
+
+    setFormTouched: (state, action: PayloadAction<keyof MovieFormData>) => {
+      state.form.touched[action.payload] = true;
+
+      const errors = validateMovieForm(state.form.data);
+      state.form.errors = errors;
+      state.form.isValid = Object.keys(errors).length === 0;
+    },
+
+    resetForm: (state) => {
+      state.form = {
+        ...movieFormInitialState,
+      };
     },
   },
   extraReducers: (builder) => {
@@ -43,7 +80,27 @@ const moviesSlice = createSlice({
         state.loading.fetch = false;
         state.error.fetch = action.payload as Error;
       });
+
+    // CREATE MOVIE
+    builder.addCase(createMovieThunk.pending, (state) => {
+      state.loading.create = true;
+      state.error.create = null;
+    });
+    builder.addCase(createMovieThunk.fulfilled, (state, action) => {
+      state.loading.create = false;
+      state.error.create = null;
+
+      const movie = action.payload as Movie;
+
+      state.entities[movie.id] = movie;
+      state.ids.push(movie.id);
+    });
+    builder.addCase(createMovieThunk.rejected, (state, action) => {
+      state.loading.create = false;
+      state.error.create = action.payload as Error;
+    });
   },
 });
 
+export const { clearErrors, updateFormField, setFormTouched, resetForm, validateForm } = moviesSlice.actions;
 export default moviesSlice.reducer;

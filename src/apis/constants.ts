@@ -1,5 +1,4 @@
 export const BUCKETS = {
-  IMAGES: 'images',
   POSTERS: 'posters',
 };
 

@@ -19,6 +19,34 @@ export interface MovieWithActorsAndProducers extends Movie {
   }>;
 }
 
+export interface MovieFormData {
+  name: string;
+  plot: string;
+  release_date: string;
+  poster: string;
+  producer_id: number | null;
+  actor_ids: number[];
+  posterFile: File | null;
+}
+
+export interface MovieFormErrors {
+  name?: string;
+  plot?: string;
+  release_date?: string;
+  poster?: string;
+  producer_id?: string;
+  actor_ids?: string;
+  posterFile?: string;
+}
+
+export interface MovieFormState {
+  data: MovieFormData;
+  errors: MovieFormErrors;
+  touched: Record<keyof MovieFormData, boolean>;
+  isValid: boolean;
+  isDirty: boolean;
+}
+
 export interface MoviesInitialState {
   entities: Record<number, Movie>;
   ids: number[];
@@ -40,4 +68,5 @@ export interface MoviesInitialState {
     total: number;
     totalPages: number;
   };
+  form: MovieFormState;
 }
