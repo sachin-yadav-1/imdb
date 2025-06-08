@@ -28,7 +28,7 @@ export interface ApiPaginatedResponse<T> {
 
 export interface Filter {
   op: string;
-  val: string | number;
+  val: string | number | number[] | string[];
 }
 
 export type Filters = Record<string, Filter>;
