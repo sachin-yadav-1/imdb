@@ -3,6 +3,7 @@ import { BUCKETS } from '../../../apis/constants';
 import { uploadFile } from '../../../apis/fileUpload/fileUpload';
 import { createMovieActors } from '../../../apis/movieActors/createMovieActors';
 import { createMovie, type CreateMovieApiPayload } from '../../../apis/movies/createMovie';
+import { setToast } from '../../common/slices';
 
 export interface CreateMovieThunkPayload extends CreateMovieApiPayload {
   posterFile: File | null;
@@ -11,7 +12,7 @@ export interface CreateMovieThunkPayload extends CreateMovieApiPayload {
 
 export const createMovieThunk = createAsyncThunk(
   'movies/createMovie',
-  async (payload: CreateMovieThunkPayload, { rejectWithValue }) => {
+  async (payload: CreateMovieThunkPayload, { rejectWithValue, dispatch }) => {
     try {
       const { posterFile, actor_ids, ...createMoviePayload } = payload;
 
@@ -33,8 +34,24 @@ export const createMovieThunk = createAsyncThunk(
         await createMovieActors(actorMoviesData);
       }
 
+      dispatch(
+        setToast({
+          show: true,
+          message: 'Movie created successfully',
+          duration: 3000,
+          type: 'success',
+        })
+      );
       return newMovie;
     } catch (err) {
+      dispatch(
+        setToast({
+          show: true,
+          message: 'Error creating movie',
+          duration: 3000,
+          type: 'error',
+        })
+      );
       return rejectWithValue(err);
     }
   }

@@ -1,9 +1,4 @@
-export interface Filter {
-  op: string;
-  val: string | number;
-}
-
-export type Filters = Record<string, Filter>;
+import type { Filters } from '../types';
 
 export interface FetchMoviesApiPayload {
   filters?: Filters;

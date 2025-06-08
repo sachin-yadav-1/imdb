@@ -2,8 +2,9 @@ import type { Movie } from '../../store/movies/types';
 import type { QueryResult } from '../client';
 import API_CLIENT from '../client';
 import { DEFAULT_SELECTS, TABLES } from '../constants';
+import { applyFilters } from '../helpers';
 import type { ApiPaginatedResponse, ApiResponse } from '../types';
-import type { FetchMoviesApiPayload, FetchMoviesPaginatedPayload, Filters } from './types';
+import type { FetchMoviesApiPayload, FetchMoviesPaginatedPayload } from './types';
 
 export const fetchMovies = async ({
   filters,
@@ -72,16 +73,3 @@ export const fetchMoviesPaginated = async ({
     },
   };
 };
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function applyFilters(query: any, filters: Filters = {}): any {
-  if (filters && Object.keys(filters).length > 0) {
-    for (const key in filters) {
-      const { op, val } = filters[key];
-      if (op === 'ilike') query = query.ilike(key, val as string);
-      else query = query.eq(key, val);
-    }
-  }
-
-  return query;
-}

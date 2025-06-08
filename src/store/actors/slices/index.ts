@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { actorsInitialState } from '../constants';
 import type { Actor } from '../types';
+import searchActorsThunk from '../thunks/searchActorsThunk';
 
 const actorsSlice = createSlice({
   name: 'actors',
@@ -25,6 +26,21 @@ const actorsSlice = createSlice({
         }
       });
     },
+  },
+
+  extraReducers: (builder) => {
+    // SEARCH ACTORS
+    builder.addCase(searchActorsThunk.pending, (state) => {
+      state.loading.search = true;
+    });
+    builder.addCase(searchActorsThunk.fulfilled, (state, action) => {
+      state.loading.search = false;
+      state.searchResults = action.payload as Actor[];
+    });
+    builder.addCase(searchActorsThunk.rejected, (state, action) => {
+      state.loading.search = false;
+      state.error.search = action.payload as string;
+    });
   },
 });
 

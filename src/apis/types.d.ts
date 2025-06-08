@@ -25,3 +25,10 @@ export interface ApiPaginatedResponse<T> {
     pagination: Pagination;
   };
 }
+
+export interface Filter {
+  op: string;
+  val: string | number;
+}
+
+export type Filters = Record<string, Filter>;

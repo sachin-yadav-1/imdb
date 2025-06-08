@@ -94,6 +94,10 @@ const moviesSlice = createSlice({
 
       state.entities[movie.id] = movie;
       state.ids.push(movie.id);
+
+      state.form = {
+        ...movieFormInitialState,
+      };
     });
     builder.addCase(createMovieThunk.rejected, (state, action) => {
       state.loading.create = false;
