@@ -17,7 +17,7 @@ interface FormSearchProps<T> {
   label: string;
   placeholder?: string;
   getOptionLabel: (option: T) => string;
-  isOptionEqualToValue: (option: T, value: T) => boolean;
+  isOptionEqualToValue?: (option: T, value: T) => boolean;
   onButtonClick?: () => void;
   size?: TextFieldProps['size'];
   buttonLabel?: string;

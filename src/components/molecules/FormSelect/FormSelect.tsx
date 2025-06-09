@@ -50,7 +50,7 @@ const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
           displayEmpty
           {...props}
           ref={ref}
-          slotProps={selectSlotProps}
+          slotProps={selectSlotProps as SelectProps['slotProps']}
           sx={{
             fontSize: '1.4rem',
             fontWeight: 400,

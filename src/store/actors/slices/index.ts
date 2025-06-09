@@ -84,7 +84,7 @@ const actorsSlice = createSlice({
     builder.addCase(createActorThunk.fulfilled, (state, action) => {
       console.log('createActorThunk.fulfilled', action.payload);
       state.loading.create = false;
-      const actor = action.payload as Actor;
+      const actor = action.payload as unknown as Actor;
 
       state.entities[actor.id] = actor;
       state.ids.push(actor.id);

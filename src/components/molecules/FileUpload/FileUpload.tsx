@@ -19,7 +19,7 @@ interface FileUploadProps {
   multiple?: boolean;
   variant?: 'button' | 'dropzone';
   placeholder?: string;
-  onChange?: (file: File | File[] | null) => void;
+  onChange: (file: File | File[] | null) => void;
   onRemove?: () => void;
   onBlur?: () => void;
 }

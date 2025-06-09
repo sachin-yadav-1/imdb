@@ -89,8 +89,8 @@ const MovieForm: React.FC<MovieFormProps> = ({ mode, movieId, onSuccess, onCance
   }, [setTouched]);
 
   const handleActorChange = useCallback(
-    (_: React.SyntheticEvent, newValue: Actor[]) => {
-      const actorIds = newValue.map((actor) => actor.id);
+    (_: React.SyntheticEvent<Element, Event>, newValue: unknown) => {
+      const actorIds = (newValue as Actor[]).map((actor) => actor.id);
       updateField('actor_ids', actorIds);
     },
     [updateField]
@@ -149,7 +149,7 @@ const MovieForm: React.FC<MovieFormProps> = ({ mode, movieId, onSuccess, onCance
   }, [setTouched]);
 
   const handlePosterFileChange = useCallback(
-    (file: File | null) => {
+    (file: File | File[] | null) => {
       updateField('posterFile', file);
       // Only clear existing poster URL if we're uploading a new file
       if (file) {
@@ -236,7 +236,7 @@ const MovieForm: React.FC<MovieFormProps> = ({ mode, movieId, onSuccess, onCance
           size="small"
         />
 
-        <FormSearch<Producer>
+        <FormSearch
           label="Producer"
           value={selectedProducer}
           buttonLabel="Create New Producer"
@@ -257,7 +257,7 @@ const MovieForm: React.FC<MovieFormProps> = ({ mode, movieId, onSuccess, onCance
           required
         />
 
-        <FormSearch<Actor>
+        <FormSearch
           multiple
           label="Actors"
           buttonLabel="Create New Actor"

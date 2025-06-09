@@ -71,7 +71,7 @@ const producersSlice = createSlice({
     });
     builder.addCase(createProducerThunk.fulfilled, (state, action) => {
       state.loading.create = false;
-      const producer = action.payload as Producer;
+      const producer = action.payload as unknown as Producer;
 
       state.entities[producer.id] = producer;
       state.ids.push(producer.id);
