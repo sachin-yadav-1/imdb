@@ -88,7 +88,7 @@ const MovieCastDetails: React.FC<MovieCastDetailsProps> = ({ movie, maxVisible =
           {finalActors || '--'}
         </Typography>
 
-        {movie.actor_ids?.length && movie.actor_ids?.length > maxVisible && (
+        {movie.actor_ids?.length > maxVisible && (
           <Typography component="span" onClick={handleShowMore} sx={STYLES.showMore}>
             {showAll ? 'Show less' : 'Show more'}
           </Typography>
