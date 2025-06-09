@@ -21,9 +21,11 @@ export const fetchMoviesPaginatedThunk = createAsyncThunk(
         const actorIds: number[] = [];
 
         movie.actor_movie?.forEach((am) => {
-          if (am.actors && !actorsMap.has(am.actors.id)) {
-            actorsMap.set(am.actors.id, am.actors);
+          if (am.actors) {
             actorIds.push(am.actors.id);
+            if (!actorsMap.has(am.actors.id)) {
+              actorsMap.set(am.actors.id, am.actors);
+            }
           }
         });
 

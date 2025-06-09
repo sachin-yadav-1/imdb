@@ -45,26 +45,20 @@ const STYLES = {
 const MovieForm: React.FC<MovieFormProps> = ({ mode, movieId, onSuccess, onCancel }) => {
   const dispatch = useAppDispatch();
   const [resetKey, setResetKey] = useState(0);
-  
-  const { 
-    formData, 
-    formErrors, 
-    touched, 
-    isValid, 
-    isLoading, 
-    updateField, 
-    setTouched, 
-    submitForm,
-    reset
-  } = useMovieForm({ mode, movieId });
 
-  const { actorOptions, actorLoading, producerOptions, producerLoading, modals } = useSelector((state: RootState) => ({
-    actorOptions: state.actors.searchResults || [],
-    actorLoading: state.actors.loading.search,
-    producerOptions: state.producers.searchResults || [],
-    producerLoading: state.producers.loading.search,
-    modals: state.common.modal,
-  }));
+  const { formData, formErrors, touched, isValid, isLoading, updateField, setTouched, submitForm, reset } =
+    useMovieForm({ mode, movieId });
+
+  const { actorOptions, actorLoading, producerOptions, producerLoading, modals, actorEntities, producerEntities } =
+    useSelector((state: RootState) => ({
+      actorOptions: state.actors.searchResults || [],
+      actorLoading: state.actors.loading.search,
+      producerOptions: state.producers.searchResults || [],
+      producerLoading: state.producers.loading.search,
+      modals: state.common.modal,
+      actorEntities: state.actors.entities,
+      producerEntities: state.producers.entities,
+    }));
 
   const handleNameChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -178,15 +172,60 @@ const MovieForm: React.FC<MovieFormProps> = ({ mode, movieId, onSuccess, onCance
     onCancel?.();
   }, [reset, onCancel]);
 
-  const selectedProducer = useMemo(
-    () => producerOptions.find((p) => p.id === formData.producer_id) || null,
-    [producerOptions, formData.producer_id]
-  );
+  const selectedProducer = useMemo(() => {
+    if (!formData.producer_id) return null;
 
-  const selectedActors = useMemo(
-    () => actorOptions.filter((actor) => formData.actor_ids.includes(actor.id)),
-    [actorOptions, formData.actor_ids]
-  );
+    const fromEntities = producerEntities[formData.producer_id];
+    if (fromEntities) return fromEntities;
+
+    return producerOptions.find((p) => p.id === formData.producer_id) || null;
+  }, [producerEntities, producerOptions, formData.producer_id]);
+
+  const selectedActors = useMemo(() => {
+    const actors: Actor[] = [];
+
+    formData.actor_ids.forEach((actorId) => {
+      const fromEntities = actorEntities[actorId];
+      if (fromEntities) {
+        actors.push(fromEntities);
+      } else {
+        const fromSearch = actorOptions.find((actor) => actor.id === actorId);
+        if (fromSearch) {
+          actors.push(fromSearch);
+        }
+      }
+    });
+
+    return actors;
+  }, [actorEntities, actorOptions, formData.actor_ids]);
+
+  const combinedActorOptions = useMemo(() => {
+    const optionsMap = new Map<number, Actor>();
+
+    actorOptions.forEach((actor) => {
+      optionsMap.set(actor.id, actor);
+    });
+
+    selectedActors.forEach((actor) => {
+      optionsMap.set(actor.id, actor);
+    });
+
+    return Array.from(optionsMap.values());
+  }, [actorOptions, selectedActors]);
+
+  const combinedProducerOptions = useMemo(() => {
+    const optionsMap = new Map<number, Producer>();
+
+    producerOptions.forEach((producer) => {
+      optionsMap.set(producer.id, producer);
+    });
+
+    if (selectedProducer) {
+      optionsMap.set(selectedProducer.id, selectedProducer);
+    }
+
+    return Array.from(optionsMap.values());
+  }, [producerOptions, selectedProducer]);
 
   const handleCloseCreateProducerModal = useCallback(() => {
     dispatch(closeCreateProducerModal());
@@ -238,10 +277,9 @@ const MovieForm: React.FC<MovieFormProps> = ({ mode, movieId, onSuccess, onCance
 
         <FormSearch
           label="Producer"
-          value={selectedProducer}
           buttonLabel="Create New Producer"
           placeholder="Search for producer..."
-          options={producerOptions}
+          options={combinedProducerOptions}
           selected={selectedProducer}
           onChange={handleProducerChange}
           onInputChange={handleProducerInputChange}
@@ -262,8 +300,8 @@ const MovieForm: React.FC<MovieFormProps> = ({ mode, movieId, onSuccess, onCance
           label="Actors"
           buttonLabel="Create New Actor"
           placeholder="Search for actors..."
-          options={actorOptions}
-          value={selectedActors}
+          options={combinedActorOptions}
+          selected={selectedActors}
           onChange={handleActorChange}
           onInputChange={handleActorInputChange}
           onBlur={handleActorBlur}
@@ -303,9 +341,11 @@ const MovieForm: React.FC<MovieFormProps> = ({ mode, movieId, onSuccess, onCance
           disabled={isLoading}
           error={touched.posterFile && Boolean(formErrors.poster)}
           helperText={
-            touched.posterFile ? formErrors.poster : 
-            mode === 'create' ? 'Upload a poster image for the movie' :
-            'Upload a new image to replace the current poster'
+            touched.posterFile
+              ? formErrors.poster
+              : mode === 'create'
+              ? 'Upload a poster image for the movie'
+              : 'Upload a new image to replace the current poster'
           }
           value={formData.posterFile}
           preview={formData.poster || null} // Show existing poster in edit mode
