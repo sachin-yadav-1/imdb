@@ -1,27 +1,32 @@
-import type { MovieFormState, MoviesInitialState } from './types';
+import type { MovieFormState, MoviesInitialState, Validate } from './types';
 
 export const movieFormInitialState: MovieFormState = {
-  data: {
-    name: '',
-    plot: '',
-    poster: '',
-    actor_ids: [],
-    release_date: '',
-    posterFile: null,
-    producer_id: null,
+  name: {
+    value: '',
+    error: '',
   },
-  errors: {},
-  touched: {
-    name: false,
-    plot: false,
-    release_date: false,
-    poster: false,
-    producer_id: false,
-    actor_ids: false,
-    posterFile: false,
+  plot: {
+    value: '',
+    error: '',
   },
-  isValid: false,
-  isDirty: false,
+  producer: {
+    value: '',
+    error: '',
+    selected: {},
+  },
+  actors: {
+    value: '',
+    error: '',
+    selected: [] as any[],
+  },
+  release_date: {
+    value: '',
+    error: '',
+  },
+  poster: {
+    value: '',
+    error: '',
+  },
 };
 
 export const moviesInitialState: MoviesInitialState = {
@@ -45,70 +50,68 @@ export const moviesInitialState: MoviesInitialState = {
     total: 0,
     totalPages: 0,
   },
-  form: movieFormInitialState,
+  createForm: movieFormInitialState,
+  editForm: movieFormInitialState,
 };
 
-export const ERROR_MESSAGES = {
+export const FORM_FIELD_VALIDATIONS: Record<keyof MovieFormState, Validate> = {
   name: {
-    required: 'Movie name is required',
-    minLength: 'Movie name must be at least 2 characters',
-    maxLength: 'Movie name must be less than 100 characters',
+    validate: (name: MovieFormState['name']) => {
+      if (!String(name.value)?.trim()) {
+        return { valid: false, error: 'Name is rquired' };
+      }
+      return { valid: true, error: '' };
+    },
   },
   plot: {
-    required: 'Plot is required',
-    minLength: 'Plot must be at least 10 characters',
-    maxLength: 'Plot must be less than 1000 characters',
-  },
-  release_date: {
-    required: 'Release date is required',
-    invalid: 'Please enter a valid date',
-    future: 'Release date cannot be in the future',
-  },
-  poster: {
-    required: 'Poster is required',
-    invalidUrl: 'Please provide a valid image URL',
-  },
-  posterFile: {
-    required: 'Poster image is required',
-    invalidType: 'Please upload a valid image file (JPEG, PNG, WebP)',
-    tooLarge: 'Image file must be less than 5MB',
-  },
-  producer_id: {
-    required: 'Producer is required',
-  },
-  actor_ids: {
-    required: 'At least one actor must be selected',
-  },
-  general: {
-    createFailed: 'Failed to create movie. Please try again.',
-    updateFailed: 'Failed to update movie. Please try again.',
-    networkError: 'Network error. Please check your connection.',
-    unexpectedError: 'An unexpected error occurred.',
-  },
-} as const;
+    validate: (plot: MovieFormState['plot']) => {
+      if (!String(plot.value).trim()) {
+        return { valid: false, error: 'Plot is rquired' };
+      }
+      if (String(plot.value).trim().length < 50) {
+        return { valid: false, error: 'Plot must be at least 50 chars long' };
+      }
 
-export const VALIDATION_RULES = {
-  name: {
-    required: true,
-    minLength: 2,
-    maxLength: 100,
+      return { valid: true, error: '' };
+    },
   },
-  plot: {
-    required: true,
-    minLength: 10,
-    maxLength: 1000,
+  producer: {
+    validate: (producer: MovieFormState['producer']) => {
+      if (!producer.selected) {
+        return { valid: false, error: 'Producer is required' };
+      }
+
+      return { valid: true, error: '' };
+    },
+  },
+  actors: {
+    validate: (actor: MovieFormState['actors']) => {
+      if (!actor.selected?.length) {
+        return { valid: false, error: 'Select at least one actor' };
+      }
+
+      return { valid: true, error: '' };
+    },
   },
   release_date: {
-    required: true,
+    validate: (release_date: MovieFormState['release_date']) => {
+      if (!release_date.value) {
+        return { valid: false, error: 'Release date is required' };
+      }
+      const date = new Date(String(release_date.value));
+      if (date > new Date()) {
+        return { valid: false, error: 'Release date cannot be of future' };
+      }
+
+      return { valid: true, error: '' };
+    },
   },
   poster: {
-    required: true,
+    validate: (poster: MovieFormState['poster']) => {
+      if (!poster) {
+        return { valid: false, error: 'Poster is required' };
+      }
+      return { valid: true, error: '' };
+    },
   },
-  producer_id: {
-    required: true,
-  },
-  actor_ids: {
-    required: true,
-    minItems: 1,
-  },
-} as const;
+};

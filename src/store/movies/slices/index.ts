@@ -1,12 +1,12 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import { movieFormInitialState, moviesInitialState } from '../constants';
-import { validateMovieForm } from '../helpers/validateForm';
-import { createMovieThunk } from '../thunks/createMovieThunk';
-import { updateMovieThunk } from '../thunks/updateMovieThunk';
+import { FORM_FIELD_VALIDATIONS, movieFormInitialState, moviesInitialState } from '../constants';
 import { fetchMoviesPaginatedThunk } from '../thunks/fetchPaginatedMoviesThunk';
 import { fetchSingleMovieThunk } from '../thunks/fetchSingleMovieThunk';
-import type { Movie, MovieFormData } from '../types';
+import type { FormFieldType, Movie, MovieFormState } from '../types';
+import { updateMovieThunk } from '../thunks/updateMovieThunk';
+import { createMovieThunk } from '../thunks/createMovieThunk';
 
+type FormTypeKey = 'createForm' | 'editForm';
 const moviesSlice = createSlice({
   name: 'movies',
   initialState: moviesInitialState,
@@ -14,70 +14,51 @@ const moviesSlice = createSlice({
     clearErrors: (state) => {
       state.error = moviesInitialState.error;
     },
+    updateFormData(
+      state,
+      action: PayloadAction<{
+        key: keyof MovieFormState;
+        value: any | any[];
+        type?: FormFieldType;
+        formTypeKey?: FormTypeKey;
+      }>
+    ) {
+      const { key, value, type = 'none', formTypeKey = 'createForm' } = action.payload;
 
-    updateFormField: (state, action: PayloadAction<{ field: keyof MovieFormData; value: any }>) => {
-      const { field, value } = action.payload;
-      state.form.data[field] = value as never;
-      state.form.touched[field] = true;
-      state.form.isDirty = true;
+      if (!key) return;
 
-      const errors = validateMovieForm(state.form.data);
-      state.form.errors = errors;
-      state.form.isValid = Object.keys(errors).length === 0;
+      if (type === 'select' || type === 'multi-select') {
+        state[formTypeKey][key].selected = value;
+      } else {
+        state[formTypeKey][key].value = value as unknown as any;
+      }
+      if (state[formTypeKey][key].error) {
+        state[formTypeKey][key].error = movieFormInitialState[key].error;
+      }
+    },
+    updateProducerSelection(state, action: PayloadAction<{ value: number; formTypeKey?: FormTypeKey }>) {
+      const { value, formTypeKey = 'createForm' } = action.payload;
+      state[formTypeKey].producer.selected = value;
     },
 
-    validateForm: (state) => {
-      const errors = validateMovieForm(state.form.data);
-      state.form.errors = errors;
-      state.form.isValid = Object.keys(errors).length === 0;
+    validateFormField(state, action: PayloadAction<{ key: keyof MovieFormState; formTypeKey?: FormTypeKey }>) {
+      const { key, formTypeKey = 'createForm' } = action.payload;
+      if (!key) return;
 
-      Object.keys(state.form.touched).forEach((field) => {
-        state.form.touched[field as keyof MovieFormData] = true;
-      });
+      const validator = FORM_FIELD_VALIDATIONS[key].validate;
+      const { valid, error } = validator(state[formTypeKey][key]);
+      if (!valid) {
+        state[formTypeKey][key].error = error;
+      }
     },
 
-    setFormTouched: (state, action: PayloadAction<keyof MovieFormData>) => {
-      state.form.touched[action.payload] = true;
-
-      const errors = validateMovieForm(state.form.data);
-      state.form.errors = errors;
-      state.form.isValid = Object.keys(errors).length === 0;
+    initializeEditMovieForm(state, action: PayloadAction<{ movie: MovieFormState }>) {
+      const { movie } = action.payload;
+      state.editForm = movie;
     },
-
-    resetForm: (state) => {
-      state.form = {
-        ...movieFormInitialState,
-      };
-    },
-
-    populateFormForEdit: (state, action: PayloadAction<Movie>) => {
-      const movie = action.payload;
-      state.form.data = {
-        name: movie.name,
-        plot: movie.plot,
-        release_date: movie.release_date,
-        poster: movie.poster || '',
-        producer_id: movie.producer?.id || null,
-        actor_ids: movie.actor_ids || [],
-        posterFile: null,
-      };
-
-      state.form.errors = {};
-      state.form.touched = {
-        name: false,
-        plot: false,
-        release_date: false,
-        poster: false,
-        producer_id: false,
-        actor_ids: false,
-        posterFile: false,
-      };
-      state.form.isValid = true;
-      state.form.isDirty = false;
-    },
-
-    initializeFormForCreate: (state) => {
-      state.form = { ...movieFormInitialState };
+    resetForm(state, action: PayloadAction<{ formTypeKey?: FormTypeKey }>) {
+      const { formTypeKey = 'createForm' } = action.payload;
+      state[formTypeKey] = moviesInitialState[formTypeKey];
     },
   },
   extraReducers: (builder) => {
@@ -136,60 +117,47 @@ const moviesSlice = createSlice({
       });
 
     // CREATE MOVIE
-    builder.addCase(createMovieThunk.pending, (state) => {
-      state.loading.create = true;
-      state.error.create = null;
-    });
-    builder.addCase(createMovieThunk.fulfilled, (state, action) => {
-      state.loading.create = false;
-      state.error.create = null;
+    builder
+      .addCase(createMovieThunk.pending, (state) => {
+        state.loading.create = true;
+        state.error.create = null;
+      })
+      .addCase(createMovieThunk.fulfilled, (state, action) => {
+        state.loading.create = false;
+        state.error.create = null;
 
-      const movie = action.payload as Movie;
+        const movie = action.payload as Movie;
 
-      state.entities[movie.id] = movie;
-      if (!state.ids.includes(movie.id)) {
-        state.ids.push(movie.id);
-      }
-
-      state.form = {
-        ...movieFormInitialState,
-      };
-    });
-    builder.addCase(createMovieThunk.rejected, (state, action) => {
-      state.loading.create = false;
-      state.error.create = action.payload as Error;
-    });
+        state.entities[movie.id] = movie;
+        if (!state.ids.includes(movie.id)) {
+          state.ids.push(movie.id);
+        }
+      })
+      .addCase(createMovieThunk.rejected, (state, action) => {
+        state.loading.create = false;
+        state.error.create = action.payload as Error;
+      });
 
     // UPDATE MOVIE
-    builder.addCase(updateMovieThunk.pending, (state) => {
-      state.loading.update = true;
-      state.error.update = null;
-    });
-    builder.addCase(updateMovieThunk.fulfilled, (state, action) => {
-      state.loading.update = false;
-      state.error.update = null;
+    builder
+      .addCase(updateMovieThunk.pending, (state) => {
+        state.loading.update = true;
+        state.error.update = null;
+      })
+      .addCase(updateMovieThunk.fulfilled, (state, action) => {
+        state.loading.update = false;
+        state.error.update = null;
 
-      const movie = action.payload as Movie;
-      state.entities[movie.id] = movie;
-
-      state.form = {
-        ...movieFormInitialState,
-      };
-    });
-    builder.addCase(updateMovieThunk.rejected, (state, action) => {
-      state.loading.update = false;
-      state.error.update = action.payload as Error;
-    });
+        const movie = action.payload as Movie;
+        state.entities[movie.id] = movie;
+      })
+      .addCase(updateMovieThunk.rejected, (state, action) => {
+        state.loading.update = false;
+        state.error.update = action.payload as Error;
+      });
   },
 });
 
-export const {
-  clearErrors,
-  updateFormField,
-  setFormTouched,
-  resetForm,
-  validateForm,
-  populateFormForEdit,
-  initializeFormForCreate,
-} = moviesSlice.actions;
+export const { clearErrors, updateFormData, validateFormField, initializeEditMovieForm, resetForm } =
+  moviesSlice.actions;
 export default moviesSlice.reducer;

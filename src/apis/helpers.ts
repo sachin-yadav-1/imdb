@@ -7,7 +7,7 @@ export const applyFilters = (query: any, filters: Filters = {}): any => {
       const { op, val } = filters[key];
 
       if (op === 'ilike') {
-        query = query.ilike(key, val as string);
+        query = query.ilike(key, `*${val}*` as string);
       } else if (op === 'in') {
         query = query.in(key, val as number[] | string[]);
       } else if (op === 'eq') {

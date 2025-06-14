@@ -29,12 +29,20 @@ export interface ActorMovie {
   created_at: string;
 }
 
-export interface PersonFormState {
-  data: PersonFormData;
-  errors: PersonFormErrors;
-  touched: Record<keyof PersonFormData, boolean>;
-  isValid: boolean;
-  isDirty: boolean;
+export interface FormFieldValue {
+  value: string;
+  error: string;
+  selected?: any;
+}
+
+export type Validate = {
+  validate: (val: any) => { valid: boolean; error: string };
+};
+export interface CreateActorFormState {
+  name: FormFieldValue;
+  dob: FormFieldValue;
+  gender: FormFieldValue;
+  bio: FormFieldValue;
 }
 
 export interface ActorsInitialState {
@@ -49,5 +57,7 @@ export interface ActorsInitialState {
     create: string | null;
     search: string | null;
   };
-  createForm: PersonFormState;
+  createForm: CreateActorFormState;
 }
+
+export type FormFieldType = 'select' | 'multi-select' | 'file' | 'none';

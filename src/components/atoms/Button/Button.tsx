@@ -5,6 +5,7 @@ const BUTTON_STYLES = {
   borderRadius: '4px',
   fontSize: '1.4rem',
   fontWeight: 500,
+  textTransform: 'capitalize',
 };
 
 interface ButtonProps extends MuiButtonProps {

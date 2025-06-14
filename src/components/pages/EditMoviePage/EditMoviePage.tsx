@@ -1,14 +1,19 @@
-import { Box, CircularProgress, Typography } from '@mui/material';
 import { memo, useEffect, useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import useNavigation from '../../../common/hooks/useNavigation';
-import { useAppDispatch, useAppSelector } from '../../../store/hooks';
+import { useAppDispatch } from '../../../store/hooks';
+import { initializeEditMovieForm } from '../../../store/movies/slices';
 import { fetchSingleMovieThunk } from '../../../store/movies/thunks/fetchSingleMovieThunk';
+import type { RootState } from '../../../store/types';
 import PageTitle from '../../atoms/PageTitle';
-import MovieForm from '../../organisms/MovieForm';
+import EditMovieForm from '../../organisms/EditMovieForm';
 
+const DEFAULT_OBJ: any = {};
 const EditMoviePage = () => {
-  const { navigate, path } = useNavigation();
   const dispatch = useAppDispatch();
+  const { path } = useNavigation();
+  const movies = useSelector((state: RootState) => state.movies.entities) || DEFAULT_OBJ;
+  const actors = useSelector((state: RootState) => state.actors.entities) || DEFAULT_OBJ;
 
   const movieId = useMemo(() => {
     const pathParts = path.split('/');
@@ -16,80 +21,55 @@ const EditMoviePage = () => {
     return parseInt(idString, 10);
   }, [path]);
 
-  const { movie, loading, error } = useAppSelector((state) => ({
-    movie: movieId ? state.movies.entities[movieId] : null,
-    loading: state.movies.loading.fetchSingle,
-    error: state.movies.error.fetchSingle,
-  }));
+  const movie = useMemo(() => {
+    return movies[movieId];
+  }, [movies, movieId]);
 
   useEffect(() => {
-    if (movieId && !isNaN(movieId)) {
-      dispatch(
-        fetchSingleMovieThunk({
-          id: movieId,
-          withActors: true,
-          withProducers: true,
-        })
-      );
+    if (movieId && !movie) {
+      dispatch(fetchSingleMovieThunk({ id: movieId, withActors: true, withProducers: true }));
     }
-  }, [dispatch, movieId]);
+  }, [movieId]);
 
-  const handleSuccess = () => {
-    navigate('/');
-  };
+  useEffect(() => {
+    if (movie) {
+      const editMovieState = {
+        name: {
+          value: movie?.name || '',
+          error: '',
+        },
+        release_date: {
+          value: movie?.release_date || '',
+          error: '',
+        },
+        producer: {
+          value: (movie?.producer_id as number) || (movie?.producer?.id as number) || '',
+          selected: movie?.producer || {},
+          error: '',
+        },
+        plot: {
+          value: movie?.plot || '',
+          error: '',
+        },
+        actors: {
+          value: '',
+          selected: movie?.actor_ids?.map((aid) => actors[aid]) || [],
+          error: '',
+        },
+        poster: {
+          value: '',
+          error: '',
+        },
+      };
 
-  const handleCancel = () => {
-    navigate('/');
-  };
-
-  if (isNaN(movieId)) {
-    return (
-      <Box sx={{ padding: '2rem', textAlign: 'center' }}>
-        <Typography variant="h6" color="error">
-          Invalid movie ID
-        </Typography>
-      </Box>
-    );
-  }
-
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
-        <CircularProgress size={48} />
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Box sx={{ padding: '2rem', textAlign: 'center' }}>
-        <Typography variant="h6" color="error">
-          Error loading movie: {error.message || 'Unknown error'}
-        </Typography>
-      </Box>
-    );
-  }
-
-  if (!movie) {
-    return (
-      <Box sx={{ padding: '2rem', textAlign: 'center' }}>
-        <Typography variant="h6" color="error">
-          Movie not found
-        </Typography>
-      </Box>
-    );
-  }
+      dispatch(initializeEditMovieForm({ movie: editMovieState }));
+    }
+  }, [movie]);
 
   return (
     <>
-      <PageTitle title={`Edit Movie: ${movie.name}`} />
-      <MovieForm
-        key={`edit-movie-form-${movieId}`}
-        mode="edit"
-        movieId={movieId}
-        onSuccess={handleSuccess}
-        onCancel={handleCancel}
-      />
+      <PageTitle title="Edit Movie" />
+      <EditMovieForm movieId={movieId || null} />
     </>
   );
 };

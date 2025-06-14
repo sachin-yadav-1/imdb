@@ -1,13 +1,11 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { BUCKETS } from '../../../apis/constants';
-import { uploadFile } from '../../../apis/fileUpload/fileUpload';
-import { updateMovie, type UpdateMovieApiPayload } from '../../../apis/movies/updateMovie';
 import { createMovieActors } from '../../../apis/movieActors/createMovieActors';
-import { setToast } from '../../common/slices';
 import { deleteMovieActors } from '../../../apis/movieActors/deleteMovieActors';
+import { updateMovie, type UpdateMovieApiPayload } from '../../../apis/movies/updateMovie';
+import { setToast } from '../../common/slices';
 
-export interface UpdateMovieThunkPayload extends Omit<UpdateMovieApiPayload, 'id'> {
-  posterFile: File | null;
+export interface UpdateMovieThunkPayload extends Omit<UpdateMovieApiPayload, 'id' | 'poster'> {
+  poster: File | null;
   actor_ids: number[];
 }
 
@@ -20,18 +18,18 @@ export const updateMovieThunk = createAsyncThunk(
   'movies/updateMovie',
   async ({ id, data: payload }: UpdateMovieThunkParams, { rejectWithValue, dispatch }) => {
     try {
-      const { posterFile, actor_ids, ...updateMoviePayload } = payload;
+      const { poster, actor_ids, ...updateMoviePayload } = payload;
 
-      let posterUrl = updateMoviePayload.poster;
+      // let posterUrl = updateMoviePayload.poster;
 
-      if (posterFile) {
-        const uploadResult = await uploadFile({ file: posterFile, bucket: BUCKETS.POSTERS });
-        posterUrl = uploadResult.path || '';
-      }
+      // if (posterFile) {
+      //   const uploadResult = await uploadFile({ file: posterFile, bucket: BUCKETS.POSTERS });
+      //   posterUrl = uploadResult.path || '';
+      // }
 
       const { data: updatedMovie } = await updateMovie(id, {
         ...updateMoviePayload,
-        poster: posterUrl,
+        poster: '',
       });
 
       if (updatedMovie && actor_ids?.length >= 0) {
