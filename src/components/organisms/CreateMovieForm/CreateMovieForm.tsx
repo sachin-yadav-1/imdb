@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import searchActorsThunk from '../../../store/actors/thunks/searchActorsThunk';
 import type { Actor } from '../../../store/actors/types';
 import { useAppDispatch } from '../../../store/hooks';
-import { updateFormData, validateFormField } from '../../../store/movies/slices';
+import { resetForm, updateFormData, validateFormField } from '../../../store/movies/slices';
 import { createMovieThunk } from '../../../store/movies/thunks/createMovieThunk';
 import type { FormFieldType, MovieFormState } from '../../../store/movies/types';
 import searchProducersThunk from '../../../store/producers/thunks/searchProducersThunk';
@@ -13,6 +13,7 @@ import type { RootState } from '../../../store/types';
 import Button from '../../atoms/Button';
 import FormField from '../../molecules/FormField';
 import SearchInput from '../SearchInput/SearchInput';
+import useNavigation from '../../../common/hooks/useNavigation';
 
 const STYLES = {
   root: {
@@ -57,6 +58,7 @@ interface CustomEvent {
 }
 const CreateMovieForm: React.FC = () => {
   const dispatch = useAppDispatch();
+  const { navigate } = useNavigation();
   const formData = useSelector(selectFormData);
   const producerOptions = useSelector((state: RootState) => state.producers.searchResults) || DEFAULT_ARR;
   const actorOptions = useSelector((state: RootState) => state.actors.searchResults) || DEFAULT_ARR;
@@ -115,7 +117,7 @@ const CreateMovieForm: React.FC = () => {
   }, []);
 
   const handleCreateMovie = useCallback(
-    (e: React.FormEvent<HTMLFormElement>) => {
+    async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
 
       const createMoviePayload = {
@@ -128,9 +130,22 @@ const CreateMovieForm: React.FC = () => {
       };
 
       dispatch(createMovieThunk(createMoviePayload as any));
+
+      const result = await dispatch(createMovieThunk(createMoviePayload as any));
+
+      const success = createMovieThunk.fulfilled.match(result);
+      if (success) {
+        dispatch(resetForm({ formTypeKey: 'createForm' }));
+        navigate('/');
+      }
     },
     [formData]
   );
+
+  const handleCancel = useCallback(() => {
+    dispatch(resetForm({ formTypeKey: 'createForm' }));
+    navigate('/');
+  }, []);
 
   return (
     <Box component="form" sx={STYLES.root} onSubmit={handleCreateMovie}>
@@ -200,10 +215,16 @@ const CreateMovieForm: React.FC = () => {
       />
 
       <Box sx={STYLES.formActions}>
-        <Button type="button" variant="outlined">
+        <Button type="button" variant="outlined" disableElevation disabled={createMovieLoading} onClick={handleCancel}>
           Cancel
         </Button>
-        <Button type="submit" variant="contained" startIcon={createMovieLoading ? <CircularProgress /> : null}>
+        <Button
+          type="submit"
+          variant="contained"
+          disableElevation
+          disabled={createMovieLoading}
+          startIcon={createMovieLoading ? <CircularProgress size={20} /> : null}
+        >
           Create
         </Button>
       </Box>

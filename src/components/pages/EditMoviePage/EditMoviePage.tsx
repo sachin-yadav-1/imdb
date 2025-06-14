@@ -1,11 +1,12 @@
 import { memo, useEffect, useMemo } from 'react';
-import useNavigation from '../../../common/hooks/useNavigation';
-import PageTitle from '../../atoms/PageTitle';
-import EditMovieForm from '../../organisms/EditMovieForm';
 import { useSelector } from 'react-redux';
-import type { RootState } from '../../../store/types';
+import useNavigation from '../../../common/hooks/useNavigation';
 import { useAppDispatch } from '../../../store/hooks';
 import { initializeEditMovieForm } from '../../../store/movies/slices';
+import { fetchSingleMovieThunk } from '../../../store/movies/thunks/fetchSingleMovieThunk';
+import type { RootState } from '../../../store/types';
+import PageTitle from '../../atoms/PageTitle';
+import EditMovieForm from '../../organisms/EditMovieForm';
 
 const DEFAULT_OBJ: any = {};
 const EditMoviePage = () => {
@@ -20,31 +21,39 @@ const EditMoviePage = () => {
     return parseInt(idString, 10);
   }, [path]);
 
-  useEffect(() => {
-    const movie = movies[movieId];
+  const movie = useMemo(() => {
+    return movies[movieId];
+  }, [movies, movieId]);
 
+  useEffect(() => {
+    if (movieId && !movie) {
+      dispatch(fetchSingleMovieThunk({ id: movieId, withActors: true, withProducers: true }));
+    }
+  }, [movieId]);
+
+  useEffect(() => {
     if (movie) {
       const editMovieState = {
         name: {
-          value: movie.name || '',
+          value: movie?.name || '',
           error: '',
         },
         release_date: {
-          value: movie.release_date || '',
+          value: movie?.release_date || '',
           error: '',
         },
         producer: {
-          value: (movie.producer!.id as number) || '',
-          selected: movie.producer || {},
+          value: (movie?.producer_id as number) || (movie?.producer?.id as number) || '',
+          selected: movie?.producer || {},
           error: '',
         },
         plot: {
-          value: movie.plot || '',
+          value: movie?.plot || '',
           error: '',
         },
         actors: {
           value: '',
-          selected: movie.actor_ids?.map((aid) => actors[aid]) || [],
+          selected: movie?.actor_ids?.map((aid) => actors[aid]) || [],
           error: '',
         },
         poster: {
@@ -55,12 +64,12 @@ const EditMoviePage = () => {
 
       dispatch(initializeEditMovieForm({ movie: editMovieState }));
     }
-  }, [movieId]);
+  }, [movie]);
 
   return (
     <>
       <PageTitle title="Edit Movie" />
-      <EditMovieForm />
+      <EditMovieForm movieId={movieId || null} />
     </>
   );
 };

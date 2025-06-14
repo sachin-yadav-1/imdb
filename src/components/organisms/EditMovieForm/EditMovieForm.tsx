@@ -2,10 +2,11 @@ import { Box, CircularProgress } from '@mui/material';
 import { createSelector } from '@reduxjs/toolkit';
 import { memo, useCallback } from 'react';
 import { useSelector } from 'react-redux';
+import useNavigation from '../../../common/hooks/useNavigation';
 import searchActorsThunk from '../../../store/actors/thunks/searchActorsThunk';
 import type { Actor } from '../../../store/actors/types';
 import { useAppDispatch } from '../../../store/hooks';
-import { updateFormData, validateFormField } from '../../../store/movies/slices';
+import { resetForm, updateFormData, validateFormField } from '../../../store/movies/slices';
 import { updateMovieThunk } from '../../../store/movies/thunks/updateMovieThunk';
 import type { FormFieldType, MovieFormState } from '../../../store/movies/types';
 import searchProducersThunk from '../../../store/producers/thunks/searchProducersThunk';
@@ -55,12 +56,16 @@ const selectFormData = createSelector(
 interface CustomEvent {
   target: { name: string; value: string; dataset?: { type?: string } };
 }
-const EditMovieForm: React.FC = () => {
+interface EditMovieProps {
+  movieId: number | null;
+}
+const EditMovieForm: React.FC<EditMovieProps> = ({ movieId = null }) => {
   const dispatch = useAppDispatch();
+  const { navigate } = useNavigation();
   const formData = useSelector(selectFormData);
   const producerOptions = useSelector((state: RootState) => state.producers.searchResults) || DEFAULT_ARR;
   const actorOptions = useSelector((state: RootState) => state.actors.searchResults) || DEFAULT_ARR;
-  const createMovieLoading = useSelector((state: RootState) => state.movies.loading.create) || false;
+  const updateMovieLoading = useSelector((state: RootState) => state.movies.loading.update) || false;
 
   const handleFieldChange = useCallback((e: React.ChangeEvent<HTMLInputElement> | CustomEvent) => {
     const key = e.target.name as keyof MovieFormState;
@@ -115,7 +120,7 @@ const EditMovieForm: React.FC = () => {
   }, []);
 
   const handleCreateMovie = useCallback(
-    (e: React.FormEvent<HTMLFormElement>) => {
+    async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
 
       const createMoviePayload = {
@@ -127,10 +132,26 @@ const EditMovieForm: React.FC = () => {
         actor_ids: formData.selectedActors.map((a: Actor) => a.id),
       };
 
-      dispatch(updateMovieThunk(createMoviePayload as any));
+      const result = await dispatch(
+        updateMovieThunk({
+          id: movieId as number,
+          data: createMoviePayload as any,
+        })
+      );
+
+      const success = updateMovieThunk.fulfilled.match(result);
+      if (success) {
+        dispatch(resetForm({ formTypeKey: 'editForm' }));
+        navigate('/');
+      }
     },
     [formData]
   );
+
+  const handleCancel = useCallback(() => {
+    dispatch(resetForm({ formTypeKey: 'editForm' }));
+    navigate('/');
+  }, []);
 
   return (
     <Box component="form" sx={STYLES.root} onSubmit={handleCreateMovie}>
@@ -200,10 +221,16 @@ const EditMovieForm: React.FC = () => {
       />
 
       <Box sx={STYLES.formActions}>
-        <Button type="button" variant="outlined">
+        <Button type="button" variant="outlined" disabled={updateMovieLoading} onClick={handleCancel}>
           Cancel
         </Button>
-        <Button type="submit" variant="contained" startIcon={createMovieLoading ? <CircularProgress /> : null}>
+
+        <Button
+          type="submit"
+          disabled={updateMovieLoading}
+          variant="contained"
+          startIcon={updateMovieLoading ? <CircularProgress size={20} /> : null}
+        >
           Update
         </Button>
       </Box>
