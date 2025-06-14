@@ -14,6 +14,9 @@ import Button from '../../atoms/Button';
 import FormField from '../../molecules/FormField';
 import SearchInput from '../SearchInput/SearchInput';
 import useNavigation from '../../../common/hooks/useNavigation';
+import CreateActorForm from '../CreateActorForm';
+import { closeCreateActorModal, openCreateActorModal } from '../../../store/common/slices';
+import { resetActorForm } from '../../../store/actors/slices';
 
 const STYLES = {
   root: {
@@ -63,6 +66,7 @@ const CreateMovieForm: React.FC = () => {
   const producerOptions = useSelector((state: RootState) => state.producers.searchResults) || DEFAULT_ARR;
   const actorOptions = useSelector((state: RootState) => state.actors.searchResults) || DEFAULT_ARR;
   const createMovieLoading = useSelector((state: RootState) => state.movies.loading.create) || false;
+  const createActorOpen = useSelector((state: RootState) => state.common.modal.createActor) || false;
 
   const handleFieldChange = useCallback((e: React.ChangeEvent<HTMLInputElement> | CustomEvent) => {
     const key = e.target.name as keyof MovieFormState;
@@ -147,88 +151,109 @@ const CreateMovieForm: React.FC = () => {
     navigate('/');
   }, []);
 
+  const handleCloseActorModal = useCallback(() => {
+    dispatch(resetActorForm());
+    dispatch(closeCreateActorModal());
+  }, []);
+
+  const handleCreateNewActorModalClick = useCallback(() => {
+    dispatch(openCreateActorModal());
+  }, []);
+
   return (
-    <Box component="form" sx={STYLES.root} onSubmit={handleCreateMovie}>
-      <FormField
-        name="name"
-        label="Name"
-        required
-        fullWidth
-        value={formData.name}
-        error={formData.nameError}
-        onChange={handleFieldChange}
-        onBlur={handleFieldBlur}
-      />
+    <>
+      <Box component="form" sx={STYLES.root} onSubmit={handleCreateMovie}>
+        <FormField
+          name="name"
+          label="Name"
+          required
+          fullWidth
+          value={formData.name}
+          error={formData.nameError}
+          onChange={handleFieldChange}
+          onBlur={handleFieldBlur}
+        />
 
-      <FormField
-        name="release_date"
-        label="Release Date"
-        required
-        type="date"
-        fullWidth
-        value={formData.releaseDate}
-        error={formData.releaseDateError}
-        onChange={handleFieldChange}
-        onBlur={handleFieldBlur}
-      />
+        <FormField
+          name="release_date"
+          label="Release Date"
+          required
+          type="date"
+          fullWidth
+          value={formData.releaseDate}
+          error={formData.releaseDateError}
+          onChange={handleFieldChange}
+          onBlur={handleFieldBlur}
+        />
 
-      <FormField
-        multiline
-        rows={4}
-        name="plot"
-        label="Plot"
-        required
-        fullWidth
-        value={formData.plot}
-        error={formData.plotError}
-        onChange={handleFieldChange}
-        onBlur={handleFieldBlur}
-      />
+        <FormField
+          multiline
+          rows={4}
+          name="plot"
+          label="Plot"
+          required
+          fullWidth
+          value={formData.plot}
+          error={formData.plotError}
+          onChange={handleFieldChange}
+          onBlur={handleFieldBlur}
+        />
 
-      <SearchInput
-        key="producer"
-        name="producer"
-        label="Producer"
-        required
-        value={formData.selectedProducer}
-        debounceTime={300}
-        options={producerOptions}
-        onChange={handleProducerSelection}
-        onInputValueChange={onInputValueChange}
-        onSearch={handleProducerSearch}
-        getOptionLabel={(option) => option.name || ''}
-      />
+        <SearchInput
+          key="producer"
+          name="producer"
+          label="Producer"
+          required
+          value={formData.selectedProducer}
+          debounceTime={300}
+          options={producerOptions}
+          onChange={handleProducerSelection}
+          onInputValueChange={onInputValueChange}
+          onSearch={handleProducerSearch}
+          getOptionLabel={(option) => option.name || ''}
+        />
 
-      <SearchInput
-        multiple
-        key="actors"
-        name="actors"
-        label="Actors"
-        required
-        value={formData.selectedActors}
-        debounceTime={300}
-        options={actorOptions}
-        onChange={handleActorSelection}
-        onInputValueChange={onInputValueChange}
-        onSearch={handleActorSearch}
-        getOptionLabel={(option) => option.name || ''}
-      />
+        <SearchInput
+          multiple
+          key="actors"
+          name="actors"
+          label="Actors"
+          required
+          createButtonText="Create New Actor"
+          onCreateButtonClick={handleCreateNewActorModalClick}
+          value={formData.selectedActors}
+          debounceTime={300}
+          options={actorOptions}
+          onChange={handleActorSelection}
+          onInputValueChange={onInputValueChange}
+          onSearch={handleActorSearch}
+          getOptionLabel={(option) => option.name || ''}
+        />
 
-      <Box sx={STYLES.formActions}>
-        <Button type="button" variant="outlined" disableElevation disabled={createMovieLoading} onClick={handleCancel}>
-          Cancel
-        </Button>
-        <Button
-          type="submit"
-          variant="contained"
-          disableElevation
-          disabled={createMovieLoading}
-          startIcon={createMovieLoading ? <CircularProgress size={20} /> : null}
-        >
-          Create
-        </Button>
+        <Box sx={STYLES.formActions}>
+          <Button
+            type="button"
+            variant="outlined"
+            disableElevation
+            disabled={createMovieLoading}
+            onClick={handleCancel}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            variant="contained"
+            disableElevation
+            disabled={createMovieLoading}
+            startIcon={createMovieLoading ? <CircularProgress size={20} /> : null}
+          >
+            Create
+          </Button>
+        </Box>
       </Box>
-    </Box>
+
+      {createActorOpen && <CreateActorForm open={createActorOpen} onClose={handleCloseActorModal} />}
+    </>
   );
 };
 

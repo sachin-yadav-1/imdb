@@ -19,6 +19,8 @@ interface SearchComponentProps {
   error?: string;
   debounceTime?: number;
   fullWidth?: boolean;
+  createButtonText?: string;
+  onCreateButtonClick?: () => void;
   onSearch: (searchValue: string, fieldName: string) => void;
   onInputValueChange: (searchValue: string, fieldName: string) => void;
   onChange?: (fieldName: string, value: SearchOption | SearchOption[] | null) => void;
@@ -36,8 +38,10 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
   error = '',
   debounceTime = 0,
   fullWidth = true,
+  createButtonText,
   onSearch,
   onChange,
+  onCreateButtonClick,
   onInputValueChange,
   getOptionLabel = (option) => option.name || '',
   sx,
@@ -86,7 +90,16 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
       clearOnBlur={false}
       getOptionLabel={getOptionLabel}
       renderInput={(params) => (
-        <FormField {...params} name={name} label={label} fullWidth required={required} error={error} />
+        <FormField
+          {...params}
+          name={name}
+          label={label}
+          fullWidth
+          required={required}
+          error={error}
+          createButtonText={createButtonText}
+          onCreateButtonClick={onCreateButtonClick}
+        />
       )}
     />
   );
