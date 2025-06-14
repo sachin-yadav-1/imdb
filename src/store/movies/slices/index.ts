@@ -1,8 +1,10 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { FORM_FIELD_VALIDATIONS, movieFormInitialState, moviesInitialState } from '../constants';
 import { fetchMoviesPaginatedThunk } from '../thunks/fetchPaginatedMoviesThunk';
+import { fetchSingleMovieThunk } from '../thunks/fetchSingleMovieThunk';
 import type { FormFieldType, Movie, MovieFormState } from '../types';
 
+type FormTypeKey = 'createForm' | 'editForm';
 const moviesSlice = createSlice({
   name: 'movies',
   initialState: moviesInitialState,
@@ -12,35 +14,45 @@ const moviesSlice = createSlice({
     },
     updateFormData(
       state,
-      action: PayloadAction<{ key: keyof MovieFormState; value: any | any[]; type?: FormFieldType }>
+      action: PayloadAction<{
+        key: keyof MovieFormState;
+        value: any | any[];
+        type?: FormFieldType;
+        formTypeKey?: FormTypeKey;
+      }>
     ) {
-      const { key, value, type = 'none' } = action.payload;
+      const { key, value, type = 'none', formTypeKey = 'createForm' } = action.payload;
 
       if (!key) return;
 
       if (type === 'select' || type === 'multi-select') {
-        state.createForm[key].selected = value;
+        state[formTypeKey][key].selected = value;
       } else {
-        state.createForm[key].value = value as unknown as any;
+        state[formTypeKey][key].value = value as unknown as any;
       }
-      if (state.createForm[key].error) {
-        state.createForm[key].error = movieFormInitialState[key].error;
+      if (state[formTypeKey][key].error) {
+        state[formTypeKey][key].error = movieFormInitialState[key].error;
       }
     },
-    updateProducerSelection(state, action: PayloadAction<{ value: number }>) {
-      const { value } = action.payload;
-      state.createForm.producer.selected = value;
+    updateProducerSelection(state, action: PayloadAction<{ value: number; formTypeKey?: FormTypeKey }>) {
+      const { value, formTypeKey = 'createForm' } = action.payload;
+      state[formTypeKey].producer.selected = value;
     },
 
-    validateFormField(state, action: PayloadAction<{ key: keyof MovieFormState }>) {
-      const { key } = action.payload;
+    validateFormField(state, action: PayloadAction<{ key: keyof MovieFormState; formTypeKey?: FormTypeKey }>) {
+      const { key, formTypeKey = 'createForm' } = action.payload;
       if (!key) return;
 
       const validator = FORM_FIELD_VALIDATIONS[key].validate;
-      const { valid, error } = validator(state.createForm[key]);
+      const { valid, error } = validator(state[formTypeKey][key]);
       if (!valid) {
-        state.createForm[key].error = error;
+        state[formTypeKey][key].error = error;
       }
+    },
+
+    initializeEditMovieForm(state, action: PayloadAction<{ movie: MovieFormState }>) {
+      const { movie } = action.payload;
+      state.editForm = movie;
     },
   },
   extraReducers: (builder) => {
@@ -75,8 +87,30 @@ const moviesSlice = createSlice({
         state.loading.fetch = false;
         state.error.fetch = action.payload as Error;
       });
+
+    // FETCH SINGLE MOVIE
+    builder
+      .addCase(fetchSingleMovieThunk.pending, (state) => {
+        state.loading.fetchSingle = true;
+        state.error.fetchSingle = null;
+      })
+      .addCase(fetchSingleMovieThunk.fulfilled, (state, action) => {
+        state.loading.fetchSingle = false;
+        state.error.fetchSingle = null;
+
+        const movie = action.payload as Movie;
+        state.entities[movie.id] = movie;
+
+        if (!state.ids.includes(movie.id)) {
+          state.ids.push(movie.id);
+        }
+      })
+      .addCase(fetchSingleMovieThunk.rejected, (state, action) => {
+        state.loading.fetchSingle = false;
+        state.error.fetchSingle = action.payload as Error;
+      });
   },
 });
 
-export const { clearErrors, updateFormData, validateFormField } = moviesSlice.actions;
+export const { clearErrors, updateFormData, validateFormField, initializeEditMovieForm } = moviesSlice.actions;
 export default moviesSlice.reducer;
