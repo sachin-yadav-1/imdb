@@ -1,0 +1,38 @@
+import { FormControl, FormHelperText, FormLabel, TextField, type TextFieldProps } from '@mui/material';
+import { memo } from 'react';
+
+interface FormFieldProps extends Omit<TextFieldProps, 'error'> {
+  error?: string;
+  label?: string;
+  required?: boolean;
+}
+
+const STYLES = {
+  label: {
+    fontSize: '1.2rem',
+    fontWeight: 600,
+    marginBottom: '1rem',
+  },
+  input: {
+    fontSize: '1.4rem',
+    fontWeight: 400,
+  },
+  helperText: {
+    fontSize: '1.2rem',
+    fontWeight: 400,
+    color: 'red',
+    marginLeft: '0',
+  },
+};
+
+const FormField: React.FC<FormFieldProps> = ({ error, required, fullWidth, label, ...rest }) => {
+  return (
+    <FormControl required={required} fullWidth={fullWidth} error={Boolean(error)}>
+      {label && <FormLabel sx={STYLES.label}>{label}</FormLabel>}
+      <TextField sx={STYLES.input} {...rest} />
+      {error && <FormHelperText sx={STYLES.helperText}>{error}</FormHelperText>}
+    </FormControl>
+  );
+};
+
+export default memo(FormField);

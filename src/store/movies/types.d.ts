@@ -19,33 +19,25 @@ export interface MovieWithActorsAndProducers extends Movie {
   }>;
 }
 
-export interface MovieFormData {
-  name: string;
-  plot: string;
-  release_date: string;
-  poster: string;
-  producer_id: number | null;
-  actor_ids: number[];
-  posterFile: File | null;
-}
-
-export interface MovieFormErrors {
-  name?: string;
-  plot?: string;
-  release_date?: string;
-  poster?: string;
-  producer_id?: string;
-  actor_ids?: string;
-  posterFile?: string;
+export interface FormFieldValue {
+  value: string | File | null;
+  error: string;
+  selected?: any | any[];
 }
 
 export interface MovieFormState {
-  data: MovieFormData;
-  errors: MovieFormErrors;
-  touched: Record<keyof MovieFormData, boolean>;
-  isValid: boolean;
-  isDirty: boolean;
+  name: FormFieldValue;
+  plot: FormFieldValue;
+  producer: FormFieldValue;
+  actors: FormFieldValue;
+  release_date: FormFieldValue;
+  poster: FormFieldValue;
 }
+export type FormFieldType = 'select' | 'multi-select' | 'file' | 'none';
+
+export type Validate = {
+  validate: (val: any) => { valid: boolean; error: string };
+};
 
 export interface MoviesInitialState {
   entities: Record<number, Movie>;
@@ -68,5 +60,6 @@ export interface MoviesInitialState {
     total: number;
     totalPages: number;
   };
-  form: MovieFormState;
+  createForm: MovieFormState;
+  editForm: MovieFormState;
 }
