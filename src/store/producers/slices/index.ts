@@ -1,10 +1,8 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import { validatePersonForm } from '../../actors/helpers/validatePersonForm';
-import type { PersonFormData } from '../../actors/types';
-import { personFormInitialState, producersInitialState } from '../constants';
+import { personFormInitialState, PRODUCER_FORM_VALIDATIONS, producersInitialState } from '../constants';
 import createProducerThunk from '../thunks/createProducerThunk';
 import searchProducersThunk from '../thunks/searchProducersThunk';
-import type { Producer } from '../types';
+import type { CreateProducerFormState, FormFieldType, Producer } from '../types';
 
 const producersSlice = createSlice({
   name: 'producers',
@@ -16,37 +14,42 @@ const producersSlice = createSlice({
     clearErrors: (state) => {
       state.error = producersInitialState.error;
     },
+    updateFormData(
+      state,
+      action: PayloadAction<{
+        key: keyof CreateProducerFormState;
+        value: any | any[];
+        type?: FormFieldType;
+      }>
+    ) {
+      const { key, value, type = 'none' } = action.payload;
 
-    // CREATE FORM ACTIONS
-    updateCreateFormField: (state, action: PayloadAction<{ field: keyof PersonFormData; value: any }>) => {
-      const { field, value } = action.payload;
-      state.createForm.data[field] = value as never;
-      state.createForm.touched[field] = true;
-      state.createForm.isDirty = true;
+      if (!key) return;
 
-      const errors = validatePersonForm(state.createForm.data, 'producer');
-      state.createForm.errors = errors;
-      state.createForm.isValid = Object.keys(errors).length === 0;
+      if (type === 'select') {
+        state.createForm[key].selected = value;
+      } else {
+        state.createForm[key].value = value as unknown as any;
+      }
+
+      if (state.createForm[key].error) {
+        state.createForm[key].error = producersInitialState.createForm[key].error;
+      }
     },
 
-    setCreateFormTouched: (state, action: PayloadAction<keyof PersonFormData>) => {
-      state.createForm.touched[action.payload] = true;
-      const errors = validatePersonForm(state.createForm.data, 'producer');
-      state.createForm.errors = errors;
+    validateFormField(state, action: PayloadAction<{ key: keyof CreateProducerFormState }>) {
+      const { key } = action.payload;
+      if (!key) return;
+
+      const validator = PRODUCER_FORM_VALIDATIONS[key].validate;
+      const { valid, error } = validator(state.createForm[key]);
+      if (!valid) {
+        state.createForm[key].error = error;
+      }
     },
 
-    validateCreateForm: (state) => {
-      const errors = validatePersonForm(state.createForm.data, 'producer');
-      state.createForm.errors = errors;
-      state.createForm.isValid = Object.keys(errors).length === 0;
-
-      Object.keys(state.createForm.touched).forEach((field) => {
-        state.createForm.touched[field as keyof PersonFormData] = true;
-      });
-    },
-
-    resetCreateForm: (state) => {
-      state.createForm = { ...personFormInitialState };
+    resetProducerForm(state) {
+      state.createForm = producersInitialState.createForm;
     },
   },
 
@@ -90,12 +93,6 @@ const producersSlice = createSlice({
   },
 });
 
-export const {
-  clearSearchResults,
-  clearErrors,
-  updateCreateFormField,
-  setCreateFormTouched,
-  validateCreateForm,
-  resetCreateForm,
-} = producersSlice.actions;
+export const { clearSearchResults, clearErrors, validateFormField, updateFormData, resetProducerForm } =
+  producersSlice.actions;
 export default producersSlice.reducer;

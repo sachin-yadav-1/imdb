@@ -1,5 +1,3 @@
-import type { PersonFormState } from '../actors/types';
-
 export interface Producer {
   id: number;
   name: string;
@@ -7,6 +5,22 @@ export interface Producer {
   dob: string;
   gender: string;
   created_at: string;
+}
+
+export interface FormFieldValue {
+  value: string;
+  error: string;
+  selected?: any;
+}
+
+export type Validate = {
+  validate: (val: any) => { valid: boolean; error: string };
+};
+export interface CreateProducerFormState {
+  name: FormFieldValue;
+  dob: FormFieldValue;
+  gender: FormFieldValue;
+  bio: FormFieldValue;
 }
 
 export interface ProducersInitialState {
@@ -21,5 +35,7 @@ export interface ProducersInitialState {
     create: string | null;
     search: string | null;
   };
-  createForm: PersonFormState;
+  createForm: CreateProducerFormState;
 }
+
+export type FormFieldType = 'select' | 'multi-select' | 'file' | 'none';

@@ -15,8 +15,15 @@ import FormField from '../../molecules/FormField';
 import SearchInput from '../SearchInput/SearchInput';
 import useNavigation from '../../../common/hooks/useNavigation';
 import CreateActorForm from '../CreateActorForm';
-import { closeCreateActorModal, openCreateActorModal } from '../../../store/common/slices';
+import {
+  closeCreateActorModal,
+  closeCreateProducerModal,
+  openCreateActorModal,
+  openCreateProducerModal,
+} from '../../../store/common/slices';
 import { resetActorForm } from '../../../store/actors/slices';
+import CreateProducerForm from '../CreateProducerForm';
+import { resetProducerForm } from '../../../store/producers/slices';
 
 const STYLES = {
   root: {
@@ -67,6 +74,7 @@ const CreateMovieForm: React.FC = () => {
   const actorOptions = useSelector((state: RootState) => state.actors.searchResults) || DEFAULT_ARR;
   const createMovieLoading = useSelector((state: RootState) => state.movies.loading.create) || false;
   const createActorOpen = useSelector((state: RootState) => state.common.modal.createActor) || false;
+  const createProducerOpen = useSelector((state: RootState) => state.common.modal.createProducer) || false;
 
   const handleFieldChange = useCallback((e: React.ChangeEvent<HTMLInputElement> | CustomEvent) => {
     const key = e.target.name as keyof MovieFormState;
@@ -160,6 +168,15 @@ const CreateMovieForm: React.FC = () => {
     dispatch(openCreateActorModal());
   }, []);
 
+  const handleCloseProducerModal = useCallback(() => {
+    dispatch(resetProducerForm());
+    dispatch(closeCreateProducerModal());
+  }, []);
+
+  const handleCreateNewProoducerModalClick = useCallback(() => {
+    dispatch(openCreateProducerModal());
+  }, []);
+
   return (
     <>
       <Box component="form" sx={STYLES.root} onSubmit={handleCreateMovie}>
@@ -204,6 +221,8 @@ const CreateMovieForm: React.FC = () => {
           name="producer"
           label="Producer"
           required
+          createButtonText="Create New Producer"
+          onCreateButtonClick={handleCreateNewProoducerModalClick}
           value={formData.selectedProducer}
           debounceTime={300}
           options={producerOptions}
@@ -253,6 +272,7 @@ const CreateMovieForm: React.FC = () => {
       </Box>
 
       {createActorOpen && <CreateActorForm open={createActorOpen} onClose={handleCloseActorModal} />}
+      {createProducerOpen && <CreateProducerForm open={createProducerOpen} onClose={handleCloseProducerModal} />}
     </>
   );
 };

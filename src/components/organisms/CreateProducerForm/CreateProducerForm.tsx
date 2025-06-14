@@ -14,12 +14,12 @@ import {
 import { createSelector } from '@reduxjs/toolkit';
 import { memo, useCallback } from 'react';
 import { useSelector } from 'react-redux';
-import { resetActorForm, updateFormData, validateFormField } from '../../../store/actors/slices';
-import createActorThunk from '../../../store/actors/thunks/createActorThunk';
-import type { CreateActorFormState } from '../../../store/actors/types';
-import { closeCreateActorModal } from '../../../store/common/slices';
+import { closeCreateProducerModal } from '../../../store/common/slices';
 import { useAppDispatch } from '../../../store/hooks';
 import type { FormFieldType } from '../../../store/movies/types';
+import { resetProducerForm, updateFormData, validateFormField } from '../../../store/producers/slices';
+import createProducerThunk from '../../../store/producers/thunks/createProducerThunk';
+import type { CreateProducerFormState } from '../../../store/producers/types';
 import type { RootState } from '../../../store/types';
 import Button from '../../atoms/Button';
 import FormField from '../../molecules/FormField';
@@ -60,7 +60,7 @@ const GENDER_OPTIONS = [
 ];
 
 const selectFormData = createSelector(
-  (state: RootState) => state.actors.createForm,
+  (state: RootState) => state.producers.createForm,
   (form) => ({
     name: form.name.value || '',
     nameError: form.name.error || '',
@@ -76,44 +76,44 @@ const selectFormData = createSelector(
 interface CustomEvent {
   target: { name: string; value: string; dataset?: { type?: string } };
 }
-interface CreateActorFormProps {
+interface CreateProducerFormProps {
   open: boolean;
   onClose: () => void;
 }
-const CreateActorForm: React.FC<CreateActorFormProps> = ({ open, onClose }) => {
+const CreateProducerForm: React.FC<CreateProducerFormProps> = ({ open, onClose }) => {
   const dispatch = useAppDispatch();
   const formData = useSelector(selectFormData);
-  const createActorLoading = useSelector((state: RootState) => state.actors.loading.create) || false;
+  const createActorLoading = useSelector((state: RootState) => state.producers.loading.create) || false;
 
   const handleFieldChange = useCallback((e: React.ChangeEvent<HTMLInputElement> | CustomEvent) => {
-    const key = e.target.name as keyof CreateActorFormState;
+    const key = e.target.name as keyof CreateProducerFormState;
     const type: FormFieldType = (e.target.dataset?.type as FormFieldType) || 'none';
     const value = e.target.value || '';
     dispatch(updateFormData({ key, value, type }));
   }, []);
 
   const handleFieldBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
-    const key = e.target.name as keyof CreateActorFormState;
+    const key = e.target.name as keyof CreateProducerFormState;
     dispatch(validateFormField({ key }));
   }, []);
 
-  const handleCreateActor = useCallback(
+  const handleCreateProducer = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
 
-      const createActorPayload = {
+      const createProducerPayload = {
         name: formData.name || '',
         bio: formData.bio || '',
         dob: formData.dob || '',
         gender: formData.gender || '',
       };
 
-      const result = await dispatch(createActorThunk(createActorPayload as any));
+      const result = await dispatch(createProducerThunk(createProducerPayload as any));
 
-      const success = createActorThunk.fulfilled.match(result);
+      const success = createProducerThunk.fulfilled.match(result);
       if (success) {
-        dispatch(resetActorForm());
-        dispatch(closeCreateActorModal());
+        dispatch(resetProducerForm());
+        dispatch(closeCreateProducerModal());
       }
     },
     [formData]
@@ -122,14 +122,14 @@ const CreateActorForm: React.FC<CreateActorFormProps> = ({ open, onClose }) => {
   return (
     <Dialog open={open} maxWidth="sm" fullWidth onClose={onClose}>
       <DialogTitle sx={STYLES.title}>
-        Create New Actor
+        Create New Producer
         <IconButton onClick={onClose}>
           <Close />
         </IconButton>
       </DialogTitle>
 
       <DialogContent>
-        <Box component="form" sx={STYLES.root} onSubmit={handleCreateActor}>
+        <Box component="form" sx={STYLES.root} onSubmit={handleCreateProducer}>
           <FormField
             name="name"
             label="Name"
@@ -196,4 +196,4 @@ const CreateActorForm: React.FC<CreateActorFormProps> = ({ open, onClose }) => {
   );
 };
 
-export default memo(CreateActorForm);
+export default memo(CreateProducerForm);
