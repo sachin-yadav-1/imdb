@@ -1,19 +1,19 @@
 import { Box, CircularProgress } from '@mui/material';
 import { createSelector } from '@reduxjs/toolkit';
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import useNavigation from '../../../common/hooks/useNavigation';
 import searchActorsThunk from '../../../store/actors/thunks/searchActorsThunk';
 import type { Actor } from '../../../store/actors/types';
 import { useAppDispatch } from '../../../store/hooks';
-import { resetForm, updateFormData, validateFormField } from '../../../store/movies/slices';
+import { resetForm, updateFormData, validateForm, validateFormField } from '../../../store/movies/slices';
 import { updateMovieThunk } from '../../../store/movies/thunks/updateMovieThunk';
 import type { FormFieldType, MovieFormState } from '../../../store/movies/types';
 import searchProducersThunk from '../../../store/producers/thunks/searchProducersThunk';
 import type { RootState } from '../../../store/types';
 import Button from '../../atoms/Button';
-import FormField from '../../molecules/FormField';
 import FileUploadField from '../../molecules/FileUploadField';
+import FormField from '../../molecules/FormField';
 import SearchInput from '../SearchInput/SearchInput';
 
 const STYLES = {
@@ -53,6 +53,7 @@ const selectFormData = createSelector(
     releaseDateError: form.release_date.error || '',
     poster: form.poster.value || null,
     posterError: form.poster.error || '',
+    isValid: form.isValid || false,
   })
 );
 
@@ -69,6 +70,39 @@ const EditMovieForm: React.FC<EditMovieProps> = ({ movieId = null }) => {
   const producerOptions = useSelector((state: RootState) => state.producers.searchResults) || DEFAULT_ARR;
   const actorOptions = useSelector((state: RootState) => state.actors.searchResults) || DEFAULT_ARR;
   const updateMovieLoading = useSelector((state: RootState) => state.movies.loading.update) || false;
+
+  const isFormValid = useMemo(() => {
+    const hasRequiredFields = !!(
+      (formData.name as string)?.trim() &&
+      (formData.plot as string)?.trim() &&
+      formData.releaseDate &&
+      formData.selectedProducer?.id &&
+      formData.selectedActors?.length > 0
+    );
+
+    const hasNoErrors = !(
+      formData.nameError ||
+      formData.plotError ||
+      formData.releaseDateError ||
+      formData.producerError ||
+      formData.actorsError ||
+      formData.posterError
+    );
+
+    return hasRequiredFields && hasNoErrors;
+  }, [
+    formData.name,
+    formData.plot,
+    formData.releaseDate,
+    formData.selectedProducer,
+    formData.selectedActors,
+    formData.nameError,
+    formData.plotError,
+    formData.releaseDateError,
+    formData.producerError,
+    formData.actorsError,
+    formData.posterError,
+  ]);
 
   const handleFieldChange = useCallback((e: React.ChangeEvent<HTMLInputElement> | CustomEvent) => {
     const key = e.target.name as keyof MovieFormState;
@@ -126,6 +160,13 @@ const EditMovieForm: React.FC<EditMovieProps> = ({ movieId = null }) => {
     async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
 
+      // Validate all fields before submitting
+      dispatch(validateForm({ formTypeKey: 'editForm' }));
+
+      if (!isFormValid) {
+        return;
+      }
+
       const updateMoviePayload = {
         name: formData.name,
         plot: formData.plot,
@@ -148,7 +189,7 @@ const EditMovieForm: React.FC<EditMovieProps> = ({ movieId = null }) => {
         navigate('/');
       }
     },
-    [formData]
+    [formData, isFormValid, movieId, dispatch, navigate]
   );
 
   const handleFileChange = useCallback(
@@ -172,7 +213,7 @@ const EditMovieForm: React.FC<EditMovieProps> = ({ movieId = null }) => {
   const handleCancel = useCallback(() => {
     dispatch(resetForm({ formTypeKey: 'editForm' }));
     navigate('/');
-  }, []);
+  }, [dispatch, navigate]);
 
   return (
     <Box component="form" sx={STYLES.root} onSubmit={handleUpdateMovie}>
@@ -224,6 +265,7 @@ const EditMovieForm: React.FC<EditMovieProps> = ({ movieId = null }) => {
         onInputValueChange={onInputValueChange}
         onSearch={handleProducerSearch}
         getOptionLabel={(option) => option.name || ''}
+        error={formData.producerError}
       />
 
       <SearchInput
@@ -239,6 +281,7 @@ const EditMovieForm: React.FC<EditMovieProps> = ({ movieId = null }) => {
         onInputValueChange={onInputValueChange}
         onSearch={handleActorSearch}
         getOptionLabel={(option) => option.name || ''}
+        error={formData.actorsError}
       />
 
       <FileUploadField
@@ -259,7 +302,7 @@ const EditMovieForm: React.FC<EditMovieProps> = ({ movieId = null }) => {
 
         <Button
           type="submit"
-          disabled={updateMovieLoading}
+          disabled={updateMovieLoading || !isFormValid}
           variant="contained"
           startIcon={updateMovieLoading ? <CircularProgress size={20} /> : null}
         >

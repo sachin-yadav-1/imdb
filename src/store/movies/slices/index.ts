@@ -1,12 +1,13 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { FORM_FIELD_VALIDATIONS, movieFormInitialState, moviesInitialState } from '../constants';
+import { createMovieThunk } from '../thunks/createMovieThunk';
 import { fetchMoviesPaginatedThunk } from '../thunks/fetchPaginatedMoviesThunk';
 import { fetchSingleMovieThunk } from '../thunks/fetchSingleMovieThunk';
-import type { FormFieldType, Movie, MovieFormState } from '../types';
 import { updateMovieThunk } from '../thunks/updateMovieThunk';
-import { createMovieThunk } from '../thunks/createMovieThunk';
+import type { FormFieldType, Movie, MovieFormState } from '../types';
 
 type FormTypeKey = 'createForm' | 'editForm';
+
 const moviesSlice = createSlice({
   name: 'movies',
   initialState: moviesInitialState,
@@ -50,6 +51,36 @@ const moviesSlice = createSlice({
       if (!valid) {
         state[formTypeKey][key].error = error;
       }
+    },
+
+    validateForm(state, action: PayloadAction<{ formTypeKey?: FormTypeKey }>) {
+      const { formTypeKey = 'createForm' } = action.payload;
+
+      Object.keys(FORM_FIELD_VALIDATIONS).forEach((key) => {
+        const fieldKey = key as keyof MovieFormState;
+        const validator = FORM_FIELD_VALIDATIONS[fieldKey].validate;
+        const { valid, error } = validator(state[formTypeKey][fieldKey]);
+        if (!valid) {
+          state[formTypeKey][fieldKey].error = error;
+        } else {
+          state[formTypeKey][fieldKey].error = '';
+        }
+      });
+
+      const hasErrors = Object.keys(state[formTypeKey]).some((key) => {
+        const fieldKey = key as keyof MovieFormState;
+        return state[formTypeKey][fieldKey].error;
+      });
+
+      const hasRequiredFields = !!(
+        state[formTypeKey].name.value?.toString().trim() &&
+        state[formTypeKey].plot.value?.toString().trim() &&
+        state[formTypeKey].release_date.value &&
+        state[formTypeKey].producer.selected?.id &&
+        state[formTypeKey].actors.selected?.length > 0
+      );
+
+      (state[formTypeKey] as any).isValid = hasRequiredFields && !hasErrors;
     },
 
     initializeEditMovieForm(state, action: PayloadAction<{ movie: MovieFormState }>) {
@@ -158,6 +189,6 @@ const moviesSlice = createSlice({
   },
 });
 
-export const { clearErrors, updateFormData, validateFormField, initializeEditMovieForm, resetForm } =
+export const { clearErrors, updateFormData, validateFormField, validateForm, initializeEditMovieForm, resetForm } =
   moviesSlice.actions;
 export default moviesSlice.reducer;

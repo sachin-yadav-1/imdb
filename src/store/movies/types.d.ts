@@ -32,7 +32,9 @@ export interface MovieFormState {
   actors: FormFieldValue;
   release_date: FormFieldValue;
   poster: FormFieldValue;
+  isValid?: boolean;
 }
+
 export type FormFieldType = 'select' | 'multi-select' | 'file' | 'none';
 
 export type Validate = {

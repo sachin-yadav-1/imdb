@@ -1,11 +1,11 @@
 import { Box, CircularProgress } from '@mui/material';
 import { createSelector } from '@reduxjs/toolkit';
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import searchActorsThunk from '../../../store/actors/thunks/searchActorsThunk';
 import type { Actor } from '../../../store/actors/types';
 import { useAppDispatch } from '../../../store/hooks';
-import { resetForm, updateFormData, validateFormField } from '../../../store/movies/slices';
+import { resetForm, updateFormData, validateFormField, validateForm } from '../../../store/movies/slices';
 import { createMovieThunk } from '../../../store/movies/thunks/createMovieThunk';
 import type { FormFieldType, MovieFormState } from '../../../store/movies/types';
 import searchProducersThunk from '../../../store/producers/thunks/searchProducersThunk';
@@ -63,6 +63,7 @@ const selectFormData = createSelector(
     releaseDateError: form.release_date.error || '',
     poster: form.poster.value || null,
     posterError: form.poster.error || '',
+    isValid: form.isValid || false,
   })
 );
 
@@ -79,6 +80,39 @@ const CreateMovieForm: React.FC = () => {
   const createMovieLoading = useSelector((state: RootState) => state.movies.loading.create) || false;
   const createActorOpen = useSelector((state: RootState) => state.common.modal.createActor) || false;
   const createProducerOpen = useSelector((state: RootState) => state.common.modal.createProducer) || false;
+
+  const isFormValid = useMemo(() => {
+    const hasRequiredFields = !!(
+      (formData.name as string)?.trim() &&
+      (formData.plot as string)?.trim() &&
+      formData.releaseDate &&
+      formData.selectedProducer?.id &&
+      formData.selectedActors?.length > 0
+    );
+
+    const hasNoErrors = !(
+      formData.nameError ||
+      formData.plotError ||
+      formData.releaseDateError ||
+      formData.producerError ||
+      formData.actorsError ||
+      formData.posterError
+    );
+
+    return hasRequiredFields && hasNoErrors;
+  }, [
+    formData.name,
+    formData.plot,
+    formData.releaseDate,
+    formData.selectedProducer,
+    formData.selectedActors,
+    formData.nameError,
+    formData.plotError,
+    formData.releaseDateError,
+    formData.producerError,
+    formData.actorsError,
+    formData.posterError,
+  ]);
 
   const handleFieldChange = useCallback((e: React.ChangeEvent<HTMLInputElement> | CustomEvent) => {
     const key = e.target.name as keyof MovieFormState;
@@ -135,6 +169,12 @@ const CreateMovieForm: React.FC = () => {
   const handleCreateMovie = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
+      
+      dispatch(validateForm({ formTypeKey: 'createForm' }));
+
+      if (!isFormValid) {
+        return;
+      }
 
       const createMoviePayload = {
         name: formData.name,
@@ -153,7 +193,7 @@ const CreateMovieForm: React.FC = () => {
         navigate('/');
       }
     },
-    [formData, dispatch, navigate]
+    [formData, dispatch, navigate, isFormValid]
   );
 
   const handleFileChange = useCallback(
@@ -260,6 +300,7 @@ const CreateMovieForm: React.FC = () => {
           onInputValueChange={onInputValueChange}
           onSearch={handleProducerSearch}
           getOptionLabel={(option) => option.name || ''}
+          error={formData.producerError}
         />
 
         <SearchInput
@@ -277,6 +318,7 @@ const CreateMovieForm: React.FC = () => {
           onInputValueChange={onInputValueChange}
           onSearch={handleActorSearch}
           getOptionLabel={(option) => option.name || ''}
+          error={formData.actorsError}
         />
 
         <Box sx={STYLES.formActions}>
@@ -293,7 +335,7 @@ const CreateMovieForm: React.FC = () => {
             type="submit"
             variant="contained"
             disableElevation
-            disabled={createMovieLoading}
+            disabled={createMovieLoading || !isFormValid}
             startIcon={createMovieLoading ? <CircularProgress size={20} /> : null}
           >
             Create

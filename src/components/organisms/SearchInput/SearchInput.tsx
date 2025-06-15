@@ -9,7 +9,7 @@ interface SearchOption {
   [key: string]: any;
 }
 
-interface SearchComponentProps {
+interface SearchInputProps {
   name: string;
   label: string;
   value?: SearchOption | SearchOption[] | null;
@@ -28,7 +28,7 @@ interface SearchComponentProps {
   sx?: any;
 }
 
-const SearchComponent: React.FC<SearchComponentProps> = ({
+const SearchInput: React.FC<SearchInputProps> = ({
   name,
   label,
   value,
@@ -55,7 +55,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
         debouncedSearch(inputValue, name);
       }
     },
-    [name, onSearch]
+    [name, onSearch, onInputValueChange]
   );
 
   const handleSelectionChange = useCallback(
@@ -72,7 +72,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
       debounce((searchValue: string, fieldName: string) => {
         onSearch(searchValue, fieldName);
       }, debounceTime),
-    [onSearch]
+    [onSearch, debounceTime]
   );
 
   return (
@@ -105,4 +105,4 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
   );
 };
 
-export default memo(SearchComponent);
+export default memo(SearchInput);

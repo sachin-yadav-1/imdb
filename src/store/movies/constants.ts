@@ -27,6 +27,7 @@ export const movieFormInitialState: MovieFormState = {
     value: '',
     error: '',
   },
+  isValid: false,
 };
 
 export const moviesInitialState: MoviesInitialState = {
@@ -54,7 +55,7 @@ export const moviesInitialState: MoviesInitialState = {
   editForm: movieFormInitialState,
 };
 
-export const FORM_FIELD_VALIDATIONS: Record<keyof MovieFormState, Validate> = {
+export const FORM_FIELD_VALIDATIONS: Record<keyof Omit<MovieFormState, 'isValid'>, Validate> = {
   name: {
     validate: (name: MovieFormState['name']) => {
       if (!String(name.value)?.trim()) {
