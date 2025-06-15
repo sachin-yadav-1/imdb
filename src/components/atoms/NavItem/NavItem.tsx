@@ -12,11 +12,11 @@ const STYLES = {
     textTransform: 'capitalize',
     transition: 'all 0.3s ease',
     '&:hover': {
-      backgroundColor: 'rgb(87, 87, 87)',
+      backgroundColor: 'primary.light',
     },
   },
   active: {
-    backgroundColor: 'rgb(87, 87, 87)',
+    backgroundColor: 'primary.dark',
   },
 };
 

@@ -16,6 +16,7 @@ const Routes = () => {
   return (
     <Container maxWidth="lg" sx={STYLES.container}>
       <Route path="/" element={<MoviesPage />} />
+
       <Route path="/add-movie" element={<AddMoviePage />} />
       <Route path="/edit-movie/:id" element={<EditMoviePage />} />
     </Container>
