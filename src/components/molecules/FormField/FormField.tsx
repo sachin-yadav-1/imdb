@@ -22,7 +22,7 @@ const STYLES = {
     marginBottom: '1rem',
   },
   input: {
-    fontSize: '2rem',
+    fontSize: '1.2rem !important',
     fontWeight: 400,
   },
   helperText: {
@@ -31,10 +31,6 @@ const STYLES = {
     color: 'red',
     marginLeft: '0',
   },
-};
-
-const DEFAULT_INPUT_SLOT_PROPS = {
-  input: { sx: { fontSize: '1.4rem' } },
 };
 
 const FormField: React.FC<FormFieldProps> = ({
@@ -58,7 +54,7 @@ const FormField: React.FC<FormFieldProps> = ({
           )}
         </Box>
       )}
-      <TextField sx={STYLES.input} slotProps={DEFAULT_INPUT_SLOT_PROPS} {...rest} />
+      <TextField {...rest} />
       {error && <FormHelperText sx={STYLES.helperText}>{error}</FormHelperText>}
     </FormControl>
   );
