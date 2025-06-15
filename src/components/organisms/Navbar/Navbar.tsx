@@ -5,10 +5,10 @@ import Toolbar from '@mui/material/Toolbar';
 import { memo } from 'react';
 import { useSelector } from 'react-redux';
 import Link from '../../../common/components/Link';
-import Logo from '../../../common/components/Logo';
 import type { RootState } from '../../../store/types';
-import NavItem from '../../atoms/NavItem';
-import UserProfile from '../../organisms/UserProfile';
+import Logo from '../../atoms/Logo';
+import NavItem from '../../molecules/NavItem';
+import UserProfile from '../../molecules/UserProfile';
 
 const STYLES = {
   nav: {

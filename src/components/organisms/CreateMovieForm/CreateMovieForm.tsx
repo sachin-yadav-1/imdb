@@ -2,29 +2,29 @@ import { Box, CircularProgress } from '@mui/material';
 import { createSelector } from '@reduxjs/toolkit';
 import { memo, useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
+import useNavigation from '../../../common/hooks/useNavigation';
+import { resetActorForm } from '../../../store/actors/slices';
 import searchActorsThunk from '../../../store/actors/thunks/searchActorsThunk';
 import type { Actor } from '../../../store/actors/types';
-import { useAppDispatch } from '../../../store/hooks';
-import { resetForm, updateFormData, validateFormField, validateForm } from '../../../store/movies/slices';
-import { createMovieThunk } from '../../../store/movies/thunks/createMovieThunk';
-import type { FormFieldType, MovieFormState } from '../../../store/movies/types';
-import searchProducersThunk from '../../../store/producers/thunks/searchProducersThunk';
-import type { RootState } from '../../../store/types';
-import Button from '../../atoms/Button';
-import FormField from '../../molecules/FormField';
-import FileUploadField from '../../molecules/FileUploadField';
-import SearchInput from '../SearchInput/SearchInput';
-import useNavigation from '../../../common/hooks/useNavigation';
-import CreateActorForm from '../CreateActorForm';
 import {
   closeCreateActorModal,
   closeCreateProducerModal,
   openCreateActorModal,
   openCreateProducerModal,
 } from '../../../store/common/slices';
-import { resetActorForm } from '../../../store/actors/slices';
-import CreateProducerForm from '../CreateProducerForm';
+import { useAppDispatch } from '../../../store/hooks';
+import { resetForm, updateFormData, validateForm, validateFormField } from '../../../store/movies/slices';
+import { createMovieThunk } from '../../../store/movies/thunks/createMovieThunk';
+import type { FormFieldType, MovieFormState } from '../../../store/movies/types';
 import { resetProducerForm } from '../../../store/producers/slices';
+import searchProducersThunk from '../../../store/producers/thunks/searchProducersThunk';
+import type { RootState } from '../../../store/types';
+import Button from '../../atoms/Button';
+import FileUploadField from '../../molecules/FileUploadField';
+import FormField from '../../molecules/FormField';
+import SearchInput from '../../molecules/SearchInput/SearchInput';
+import CreateActorForm from '../CreateActorForm';
+import CreateProducerForm from '../CreateProducerForm';
 
 const STYLES = {
   root: {

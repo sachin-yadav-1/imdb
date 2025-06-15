@@ -2,7 +2,7 @@ import { Box, Card, CardContent, CardMedia, Typography, type SxProps } from '@mu
 import { memo, useMemo } from 'react';
 import { getYearFromDate } from '../../../common/utils/date';
 import type { Movie } from '../../../store/movies/types';
-import MoviePlot from '../../atoms/MoviePlot';
+import MoviePlot from '../../molecules/MoviePlot';
 import MovieActions from '../../molecules/MovieActions';
 import MovieCastDetails from '../../molecules/MovieCastDetails';
 

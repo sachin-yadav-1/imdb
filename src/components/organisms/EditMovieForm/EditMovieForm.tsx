@@ -14,7 +14,7 @@ import type { RootState } from '../../../store/types';
 import Button from '../../atoms/Button';
 import FileUploadField from '../../molecules/FileUploadField';
 import FormField from '../../molecules/FormField';
-import SearchInput from '../SearchInput/SearchInput';
+import SearchInput from '../../molecules/SearchInput/SearchInput';
 
 const STYLES = {
   root: {
@@ -160,7 +160,6 @@ const EditMovieForm: React.FC<EditMovieProps> = ({ movieId = null }) => {
     async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
 
-      // Validate all fields before submitting
       dispatch(validateForm({ formTypeKey: 'editForm' }));
 
       if (!isFormValid) {

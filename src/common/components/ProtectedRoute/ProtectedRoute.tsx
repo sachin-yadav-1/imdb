@@ -1,10 +1,10 @@
 import { Box, CircularProgress } from '@mui/material';
 import { memo, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
-import { useAppDispatch } from '../../../store/hooks';
+import AuthPage from '../../../components/pages/AuthPage';
 import { checkAuthThunk } from '../../../store/auth/thunks/checkAuthThunk';
+import { useAppDispatch } from '../../../store/hooks';
 import type { RootState } from '../../../store/types';
-import AuthPage from '../../pages/AuthPage';
 
 const STYLES = {
   loadingContainer: {

@@ -1,4 +1,4 @@
-import { Box } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { memo } from 'react';
 import { useAppSelector } from '../../../store/hooks';
 import MovieCard from '../MovieCard';
@@ -14,6 +14,10 @@ const STYLES = {
     flexDirection: 'column',
     gap: '2rem',
   },
+  text: {
+    fontSize: '1.6rem',
+    fontWeight: 600,
+  },
 };
 
 const MovieList = () => {
@@ -21,9 +25,8 @@ const MovieList = () => {
 
   return (
     <Box sx={STYLES.root}>
-      {ids.map((id, idx) => (
-        <MovieCard key={id} movie={movies[id]} borderless={idx === ids.length - 1} />
-      ))}
+      {ids?.length === 0 && <Typography sx={STYLES.text}>No movies found. Please create one.</Typography>}
+      {ids && ids?.map((id, idx) => <MovieCard key={id} movie={movies[id]} borderless={idx === ids.length - 1} />)}
     </Box>
   );
 };
