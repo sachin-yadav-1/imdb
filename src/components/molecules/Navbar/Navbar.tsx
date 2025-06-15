@@ -19,6 +19,7 @@ const STYLES = {
   navItemContainer: {
     display: 'flex',
     gap: '1rem',
+    alignItems: 'center',
   },
   rightSection: {
     display: 'flex',
@@ -39,11 +40,13 @@ const Navbar = () => {
           </Link>
 
           <Box sx={STYLES.rightSection}>
-            <Box sx={STYLES.navItemContainer}>
-              <NavItem key="movies" label="Movies" path="/" />
-              {isAuthenticated && <NavItem key="create-movie" label="Create New Movie" path="/add-movie" />}
-              {isAuthenticated && <UserProfile />}
-            </Box>
+            {isAuthenticated && (
+              <Box sx={STYLES.navItemContainer}>
+                <NavItem key="movies" label="Movies" path="/" />
+                <NavItem key="create-movie" label="Create New Movie" path="/add-movie" />
+                <UserProfile />
+              </Box>
+            )}
           </Box>
         </Toolbar>
       </Container>
