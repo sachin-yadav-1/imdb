@@ -1,4 +1,4 @@
-import { Box, Pagination } from '@mui/material';
+import { Box, CircularProgress, Pagination } from '@mui/material';
 import { memo, useCallback, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { fetchMoviesPaginatedThunk } from '../../../store/movies/thunks/fetchPaginatedMoviesThunk';
@@ -13,8 +13,6 @@ const STYLES = {
     alignItems: 'center',
   },
 };
-
-const MoviesSkeleton = () => <h1>Loading...</h1>;
 
 const MoviesPage = () => {
   const dispatch = useAppDispatch();
@@ -33,13 +31,15 @@ const MoviesPage = () => {
 
   return (
     <Box sx={STYLES.root}>
-      {loading.fetch && <MoviesSkeleton />}
+      <Box sx={{ minHeight: loading ? '60vh' : 'fit-content' }}>
+        {loading.fetch && <CircularProgress size={20} />}
 
-      {error.fetch && !loading.fetch && (
-        <Box sx={{ color: 'red' }}>{error.fetch?.message || 'Something went wrong'}</Box>
-      )}
+        {error.fetch && !loading.fetch && (
+          <Box sx={{ color: 'red' }}>{error.fetch?.message || 'Something went wrong'}</Box>
+        )}
 
-      {!loading.fetch && !error.fetch && <MovieList />}
+        {!loading.fetch && !error.fetch && <MovieList />}
+      </Box>
 
       <Pagination
         size="large"
