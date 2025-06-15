@@ -108,9 +108,9 @@ export const FORM_FIELD_VALIDATIONS: Record<keyof MovieFormState, Validate> = {
   },
   poster: {
     validate: (poster: MovieFormState['poster']) => {
-      if (!poster) {
-        return { valid: false, error: 'Poster is required' };
-      }
+      // if (!poster) {
+      //   return { valid: false, error: 'Poster is required' };
+      // }
       return { valid: true, error: '' };
     },
   },

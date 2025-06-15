@@ -13,6 +13,7 @@ import searchProducersThunk from '../../../store/producers/thunks/searchProducer
 import type { RootState } from '../../../store/types';
 import Button from '../../atoms/Button';
 import FormField from '../../molecules/FormField';
+import FileUploadField from '../../molecules/FileUploadField';
 import SearchInput from '../SearchInput/SearchInput';
 
 const STYLES = {
@@ -50,6 +51,8 @@ const selectFormData = createSelector(
     actorsError: form.actors.error || '',
     releaseDate: form.release_date.value || '',
     releaseDateError: form.release_date.error || '',
+    poster: form.poster.value || null,
+    posterError: form.poster.error || '',
   })
 );
 
@@ -119,14 +122,14 @@ const EditMovieForm: React.FC<EditMovieProps> = ({ movieId = null }) => {
     handleFieldChange({ target: { value: inputValue, name, dataset: { type: 'none' } } });
   }, []);
 
-  const handleCreateMovie = useCallback(
+  const handleUpdateMovie = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
 
-      const createMoviePayload = {
+      const updateMoviePayload = {
         name: formData.name,
         plot: formData.plot,
-        poster: '',
+        poster: formData.poster,
         release_date: formData.releaseDate,
         producer_id: formData.selectedProducer.id,
         actor_ids: formData.selectedActors.map((a: Actor) => a.id),
@@ -135,7 +138,7 @@ const EditMovieForm: React.FC<EditMovieProps> = ({ movieId = null }) => {
       const result = await dispatch(
         updateMovieThunk({
           id: movieId as number,
-          data: createMoviePayload as any,
+          data: updateMoviePayload as any,
         })
       );
 
@@ -148,13 +151,31 @@ const EditMovieForm: React.FC<EditMovieProps> = ({ movieId = null }) => {
     [formData]
   );
 
+  const handleFileChange = useCallback(
+    (file: File | null) => {
+      dispatch(
+        updateFormData({
+          key: 'poster',
+          value: file,
+          type: 'file',
+          formTypeKey: 'editForm',
+        })
+      );
+    },
+    [dispatch]
+  );
+
+  const handleFileBlur = useCallback(() => {
+    dispatch(validateFormField({ key: 'poster', formTypeKey: 'editForm' }));
+  }, [dispatch]);
+
   const handleCancel = useCallback(() => {
     dispatch(resetForm({ formTypeKey: 'editForm' }));
     navigate('/');
   }, []);
 
   return (
-    <Box component="form" sx={STYLES.root} onSubmit={handleCreateMovie}>
+    <Box component="form" sx={STYLES.root} onSubmit={handleUpdateMovie}>
       <FormField
         name="name"
         label="Name"
@@ -218,6 +239,17 @@ const EditMovieForm: React.FC<EditMovieProps> = ({ movieId = null }) => {
         onInputValueChange={onInputValueChange}
         onSearch={handleActorSearch}
         getOptionLabel={(option) => option.name || ''}
+      />
+
+      <FileUploadField
+        name="poster"
+        label="Movie Poster"
+        value={formData.poster}
+        error={formData.posterError}
+        onChange={handleFileChange}
+        onBlur={handleFileBlur}
+        accept="image/*"
+        disabled={updateMovieLoading}
       />
 
       <Box sx={STYLES.formActions}>

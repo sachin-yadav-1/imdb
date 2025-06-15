@@ -12,6 +12,7 @@ import searchProducersThunk from '../../../store/producers/thunks/searchProducer
 import type { RootState } from '../../../store/types';
 import Button from '../../atoms/Button';
 import FormField from '../../molecules/FormField';
+import FileUploadField from '../../molecules/FileUploadField';
 import SearchInput from '../SearchInput/SearchInput';
 import useNavigation from '../../../common/hooks/useNavigation';
 import CreateActorForm from '../CreateActorForm';
@@ -60,12 +61,15 @@ const selectFormData = createSelector(
     actorsError: form.actors.error || '',
     releaseDate: form.release_date.value || '',
     releaseDateError: form.release_date.error || '',
+    poster: form.poster.value || null,
+    posterError: form.poster.error || '',
   })
 );
 
 interface CustomEvent {
   target: { name: string; value: string; dataset?: { type?: string } };
 }
+
 const CreateMovieForm: React.FC = () => {
   const dispatch = useAppDispatch();
   const { navigate } = useNavigation();
@@ -135,13 +139,11 @@ const CreateMovieForm: React.FC = () => {
       const createMoviePayload = {
         name: formData.name,
         plot: formData.plot,
-        poster: '',
+        poster: formData.poster,
         release_date: formData.releaseDate,
         producer_id: formData.selectedProducer.id,
         actor_ids: formData.selectedActors.map((a: Actor) => a.id),
       };
-
-      dispatch(createMovieThunk(createMoviePayload as any));
 
       const result = await dispatch(createMovieThunk(createMoviePayload as any));
 
@@ -151,31 +153,48 @@ const CreateMovieForm: React.FC = () => {
         navigate('/');
       }
     },
-    [formData]
+    [formData, dispatch, navigate]
   );
+
+  const handleFileChange = useCallback(
+    (file: File | null) => {
+      dispatch(
+        updateFormData({
+          key: 'poster',
+          value: file,
+          type: 'file',
+        })
+      );
+    },
+    [dispatch]
+  );
+
+  const handleFileBlur = useCallback(() => {
+    dispatch(validateFormField({ key: 'poster' }));
+  }, [dispatch]);
 
   const handleCancel = useCallback(() => {
     dispatch(resetForm({ formTypeKey: 'createForm' }));
     navigate('/');
-  }, []);
+  }, [dispatch, navigate]);
 
   const handleCloseActorModal = useCallback(() => {
     dispatch(resetActorForm());
     dispatch(closeCreateActorModal());
-  }, []);
+  }, [dispatch]);
 
   const handleCreateNewActorModalClick = useCallback(() => {
     dispatch(openCreateActorModal());
-  }, []);
+  }, [dispatch]);
 
   const handleCloseProducerModal = useCallback(() => {
     dispatch(resetProducerForm());
     dispatch(closeCreateProducerModal());
-  }, []);
+  }, [dispatch]);
 
-  const handleCreateNewProoducerModalClick = useCallback(() => {
+  const handleCreateNewProducerModalClick = useCallback(() => {
     dispatch(openCreateProducerModal());
-  }, []);
+  }, [dispatch]);
 
   return (
     <>
@@ -216,13 +235,24 @@ const CreateMovieForm: React.FC = () => {
           onBlur={handleFieldBlur}
         />
 
+        <FileUploadField
+          name="poster"
+          label="Movie Poster"
+          value={formData.poster}
+          error={formData.posterError}
+          onChange={handleFileChange}
+          onBlur={handleFileBlur}
+          accept="image/*"
+          fullWidth
+        />
+
         <SearchInput
           key="producer"
           name="producer"
           label="Producer"
           required
           createButtonText="Create New Producer"
-          onCreateButtonClick={handleCreateNewProoducerModalClick}
+          onCreateButtonClick={handleCreateNewProducerModalClick}
           value={formData.selectedProducer}
           debounceTime={300}
           options={producerOptions}

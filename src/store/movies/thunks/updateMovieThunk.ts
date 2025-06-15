@@ -3,6 +3,8 @@ import { createMovieActors } from '../../../apis/movieActors/createMovieActors';
 import { deleteMovieActors } from '../../../apis/movieActors/deleteMovieActors';
 import { updateMovie, type UpdateMovieApiPayload } from '../../../apis/movies/updateMovie';
 import { setToast } from '../../common/slices';
+import { uploadFile } from '../../../apis/fileUpload/fileUpload';
+import { BUCKETS } from '../../../apis/constants';
 
 export interface UpdateMovieThunkPayload extends Omit<UpdateMovieApiPayload, 'id' | 'poster'> {
   poster: File | null;
@@ -20,16 +22,18 @@ export const updateMovieThunk = createAsyncThunk(
     try {
       const { poster, actor_ids, ...updateMoviePayload } = payload;
 
-      // let posterUrl = updateMoviePayload.poster;
-
-      // if (posterFile) {
-      //   const uploadResult = await uploadFile({ file: posterFile, bucket: BUCKETS.POSTERS });
-      //   posterUrl = uploadResult.path || '';
-      // }
+      let posterUrl = typeof poster === 'string' ? poster : '';
+      if (poster && poster instanceof File) {
+        const uploadResult = await uploadFile({
+          file: poster,
+          bucket: BUCKETS.POSTERS,
+        });
+        posterUrl = uploadResult.path || '';
+      }
 
       const { data: updatedMovie } = await updateMovie(id, {
         ...updateMoviePayload,
-        poster: '',
+        poster: posterUrl,
       });
 
       if (updatedMovie && actor_ids?.length >= 0) {

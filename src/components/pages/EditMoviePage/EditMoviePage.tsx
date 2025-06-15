@@ -57,14 +57,14 @@ const EditMoviePage = () => {
           error: '',
         },
         poster: {
-          value: '',
+          value: movie?.poster || null,
           error: '',
         },
       };
 
       dispatch(initializeEditMovieForm({ movie: editMovieState }));
     }
-  }, [movie]);
+  }, [movie, actors, dispatch]);
 
   return (
     <>
