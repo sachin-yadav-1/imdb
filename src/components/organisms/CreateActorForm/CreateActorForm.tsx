@@ -12,10 +12,11 @@ import {
   Select,
 } from '@mui/material';
 import { createSelector } from '@reduxjs/toolkit';
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import type { CreatePersonFormState, FormFieldType } from '../../../common/types';
-import { resetActorForm, updateFormData, validateFormField } from '../../../store/actors/slices';
+import type { CreatePersonFormState, CustomEvent, FormFieldType } from '../../../common/types';
+import { GENDER_OPTIONS } from '../../../common/utils/constants';
+import { resetActorForm, updateFormData, validateForm, validateFormField } from '../../../store/actors/slices';
 import createActorThunk from '../../../store/actors/thunks/createActorThunk';
 import { closeCreateActorModal } from '../../../store/common/slices';
 import { useAppDispatch } from '../../../store/hooks';
@@ -52,12 +53,6 @@ const STYLES = {
   },
 };
 
-const GENDER_OPTIONS = [
-  { value: 'M', label: 'Male' },
-  { value: 'F', label: 'Female' },
-  { value: 'O', label: 'Other' },
-];
-
 const selectFormData = createSelector(
   (state: RootState) => state.actors.createForm,
   (form) => ({
@@ -72,33 +67,51 @@ const selectFormData = createSelector(
   })
 );
 
-interface CustomEvent {
-  target: { name: string; value: string; dataset?: { type?: string } };
-}
 interface CreateActorFormProps {
   open: boolean;
   onClose: () => void;
 }
+
 const CreateActorForm: React.FC<CreateActorFormProps> = ({ open, onClose }) => {
   const dispatch = useAppDispatch();
   const formData = useSelector(selectFormData);
   const createActorLoading = useSelector((state: RootState) => state.actors.loading.create) || false;
 
-  const handleFieldChange = useCallback((e: React.ChangeEvent<HTMLInputElement> | CustomEvent) => {
-    const key = e.target.name as keyof CreatePersonFormState;
-    const type: FormFieldType = (e.target.dataset?.type as FormFieldType) || 'none';
-    const value = e.target.value || '';
-    dispatch(updateFormData({ key, value, type }));
-  }, []);
+  const isFormValid = useMemo(() => {
+    const hasRequiredFields = !!formData.name?.trim();
 
-  const handleFieldBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
-    const key = e.target.name as keyof CreatePersonFormState;
-    dispatch(validateFormField({ key }));
-  }, []);
+    const hasNoErrors = !(formData.nameError || formData.dobError || formData.genderError || formData.bioError);
+
+    return hasRequiredFields && hasNoErrors;
+  }, [formData.name, formData.nameError, formData.dobError, formData.genderError, formData.bioError]);
+
+  const handleFieldChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement> | CustomEvent) => {
+      const key = e.target.name as keyof CreatePersonFormState;
+      const type: FormFieldType = (e.target.dataset?.type as FormFieldType) || 'none';
+      const value = e.target.value || '';
+      dispatch(updateFormData({ key, value, type }));
+    },
+    [dispatch]
+  );
+
+  const handleFieldBlur = useCallback(
+    (e: React.FocusEvent<HTMLInputElement>) => {
+      const key = e.target.name as keyof CreatePersonFormState;
+      dispatch(validateFormField({ key }));
+    },
+    [dispatch]
+  );
 
   const handleCreateActor = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
+
+      dispatch(validateForm());
+
+      if (!isFormValid) {
+        return;
+      }
 
       const createActorPayload = {
         name: formData.name || '',
@@ -115,7 +128,7 @@ const CreateActorForm: React.FC<CreateActorFormProps> = ({ open, onClose }) => {
         dispatch(closeCreateActorModal());
       }
     },
-    [formData]
+    [formData, dispatch, isFormValid]
   );
 
   return (
@@ -143,7 +156,6 @@ const CreateActorForm: React.FC<CreateActorFormProps> = ({ open, onClose }) => {
           <FormField
             name="dob"
             label="DOB"
-            required
             type="date"
             fullWidth
             value={formData.dob}
@@ -183,7 +195,7 @@ const CreateActorForm: React.FC<CreateActorFormProps> = ({ open, onClose }) => {
               type="submit"
               variant="contained"
               disableElevation
-              disabled={createActorLoading}
+              disabled={createActorLoading || !isFormValid}
               startIcon={createActorLoading ? <CircularProgress size={20} /> : null}
             >
               Create

@@ -61,6 +61,19 @@ const actorsSlice = createSlice({
       }
     },
 
+    validateForm(state) {
+      Object.keys(PERSON_FORM_VALIDATIONS).forEach((key) => {
+        const fieldKey = key as keyof CreatePersonFormState;
+        const validator = PERSON_FORM_VALIDATIONS[fieldKey].validate;
+        const { valid, error } = validator(state.createForm[fieldKey]);
+        if (!valid) {
+          state.createForm[fieldKey].error = error;
+        } else {
+          state.createForm[fieldKey].error = '';
+        }
+      });
+    },
+
     resetActorForm(state) {
       state.createForm = actorsInitialState.createForm;
     },
@@ -107,6 +120,13 @@ const actorsSlice = createSlice({
   },
 });
 
-export const { clearSearchResults, updateFormData, validateFormField, updateActorsFromMovie, resetActorForm } =
-  actorsSlice.actions;
+export const {
+  clearSearchResults,
+  updateFormData,
+  validateFormField,
+  validateForm,
+  updateActorsFromMovie,
+  resetActorForm,
+} = actorsSlice.actions;
+
 export default actorsSlice.reducer;

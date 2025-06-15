@@ -17,4 +17,6 @@ export interface CreatePersonFormState {
   bio: FormFieldValue;
 }
 
-
+export interface CustomEvent {
+  target: { name: string; value: string; dataset?: { type?: string } };
+}

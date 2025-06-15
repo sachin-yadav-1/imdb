@@ -11,12 +11,15 @@ export const PERSON_FORM_VALIDATIONS: Record<keyof CreatePersonFormState, Valida
   },
   dob: {
     validate: (dob: CreatePersonFormState['dob']) => {
+      if (!dob.value) {
+        return { valid: false, error: 'DOB is required' };
+      }
       if (dob.value) {
         const dobYear = new Date(dob.value as string)?.getFullYear();
         const currentYear = new Date().getFullYear();
 
         if (currentYear - dobYear < 10) {
-          return { valid: false, error: 'Actor should be at least 10Yr old' };
+          return { valid: false, error: 'Person should be at least 10yr old' };
         }
       }
 

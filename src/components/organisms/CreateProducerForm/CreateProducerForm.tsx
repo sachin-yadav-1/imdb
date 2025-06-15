@@ -12,12 +12,13 @@ import {
   Select,
 } from '@mui/material';
 import { createSelector } from '@reduxjs/toolkit';
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import type { CreatePersonFormState, FormFieldType } from '../../../common/types';
+import type { CreatePersonFormState, CustomEvent, FormFieldType } from '../../../common/types';
+import { GENDER_OPTIONS } from '../../../common/utils/constants';
 import { closeCreateProducerModal } from '../../../store/common/slices';
 import { useAppDispatch } from '../../../store/hooks';
-import { resetProducerForm, updateFormData, validateFormField } from '../../../store/producers/slices';
+import { resetProducerForm, updateFormData, validateForm, validateFormField } from '../../../store/producers/slices';
 import createProducerThunk from '../../../store/producers/thunks/createProducerThunk';
 import type { RootState } from '../../../store/types';
 import Button from '../../atoms/Button';
@@ -52,12 +53,6 @@ const STYLES = {
   },
 };
 
-const GENDER_OPTIONS = [
-  { value: 'M', label: 'Male' },
-  { value: 'F', label: 'Female' },
-  { value: 'O', label: 'Other' },
-];
-
 const selectFormData = createSelector(
   (state: RootState) => state.producers.createForm,
   (form) => ({
@@ -72,33 +67,51 @@ const selectFormData = createSelector(
   })
 );
 
-interface CustomEvent {
-  target: { name: string; value: string; dataset?: { type?: string } };
-}
 interface CreateProducerFormProps {
   open: boolean;
   onClose: () => void;
 }
+
 const CreateProducerForm: React.FC<CreateProducerFormProps> = ({ open, onClose }) => {
   const dispatch = useAppDispatch();
   const formData = useSelector(selectFormData);
-  const createActorLoading = useSelector((state: RootState) => state.producers.loading.create) || false;
+  const createProducerLoading = useSelector((state: RootState) => state.producers.loading.create) || false;
 
-  const handleFieldChange = useCallback((e: React.ChangeEvent<HTMLInputElement> | CustomEvent) => {
-    const key = e.target.name as keyof CreatePersonFormState;
-    const type: FormFieldType = (e.target.dataset?.type as FormFieldType) || 'none';
-    const value = e.target.value || '';
-    dispatch(updateFormData({ key, value, type }));
-  }, []);
+  const isFormValid = useMemo(() => {
+    const hasRequiredFields = !!formData.name?.trim();
 
-  const handleFieldBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
-    const key = e.target.name as keyof CreatePersonFormState;
-    dispatch(validateFormField({ key }));
-  }, []);
+    const hasNoErrors = !(formData.nameError || formData.dobError || formData.genderError || formData.bioError);
+
+    return hasRequiredFields && hasNoErrors;
+  }, [formData.name, formData.nameError, formData.dobError, formData.genderError, formData.bioError]);
+
+  const handleFieldChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement> | CustomEvent) => {
+      const key = e.target.name as keyof CreatePersonFormState;
+      const type: FormFieldType = (e.target.dataset?.type as FormFieldType) || 'none';
+      const value = e.target.value || '';
+      dispatch(updateFormData({ key, value, type }));
+    },
+    [dispatch]
+  );
+
+  const handleFieldBlur = useCallback(
+    (e: React.FocusEvent<HTMLInputElement>) => {
+      const key = e.target.name as keyof CreatePersonFormState;
+      dispatch(validateFormField({ key }));
+    },
+    [dispatch]
+  );
 
   const handleCreateProducer = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
+
+      dispatch(validateForm());
+
+      if (!isFormValid) {
+        return;
+      }
 
       const createProducerPayload = {
         name: formData.name || '',
@@ -115,7 +128,7 @@ const CreateProducerForm: React.FC<CreateProducerFormProps> = ({ open, onClose }
         dispatch(closeCreateProducerModal());
       }
     },
-    [formData]
+    [formData, dispatch, isFormValid]
   );
 
   return (
@@ -143,7 +156,6 @@ const CreateProducerForm: React.FC<CreateProducerFormProps> = ({ open, onClose }
           <FormField
             name="dob"
             label="DOB"
-            required
             type="date"
             fullWidth
             value={formData.dob}
@@ -176,15 +188,21 @@ const CreateProducerForm: React.FC<CreateProducerFormProps> = ({ open, onClose }
           />
 
           <Box sx={STYLES.formActions}>
-            <Button type="button" variant="outlined" disableElevation disabled={createActorLoading} onClick={onClose}>
+            <Button
+              type="button"
+              variant="outlined"
+              disableElevation
+              disabled={createProducerLoading}
+              onClick={onClose}
+            >
               Cancel
             </Button>
             <Button
               type="submit"
               variant="contained"
               disableElevation
-              disabled={createActorLoading}
-              startIcon={createActorLoading ? <CircularProgress size={20} /> : null}
+              disabled={createProducerLoading || !isFormValid}
+              startIcon={createProducerLoading ? <CircularProgress size={20} /> : null}
             >
               Create
             </Button>

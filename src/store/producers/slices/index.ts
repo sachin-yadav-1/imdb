@@ -50,6 +50,19 @@ const producersSlice = createSlice({
       }
     },
 
+    validateForm(state) {
+      Object.keys(PERSON_FORM_VALIDATIONS).forEach((key) => {
+        const fieldKey = key as keyof CreatePersonFormState;
+        const validator = PERSON_FORM_VALIDATIONS[fieldKey].validate;
+        const { valid, error } = validator(state.createForm[fieldKey]);
+        if (!valid) {
+          state.createForm[fieldKey].error = error;
+        } else {
+          state.createForm[fieldKey].error = '';
+        }
+      });
+    },
+
     resetProducerForm(state) {
       state.createForm = producersInitialState.createForm;
     },
@@ -95,6 +108,7 @@ const producersSlice = createSlice({
   },
 });
 
-export const { clearSearchResults, clearErrors, validateFormField, updateFormData, resetProducerForm } =
+export const { clearSearchResults, clearErrors, validateFormField, validateForm, updateFormData, resetProducerForm } =
   producersSlice.actions;
+
 export default producersSlice.reducer;
