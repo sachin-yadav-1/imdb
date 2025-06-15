@@ -92,20 +92,43 @@ const FileUploadField: React.FC<FileUploadFieldProps> = ({
       const file = event.target.files?.[0] || null;
       onChange?.(file);
 
+      if (onBlur) {
+        onBlur();
+      }
+
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
     },
-    [onChange]
+    [onChange, onBlur]
   );
 
   const handleClearFile = useCallback(() => {
     onChange?.(null);
-  }, [onChange]);
 
-  const handleUploadClick = useCallback(() => {
+    if (onBlur) {
+      onBlur();
+    }
+  }, [onChange, onBlur]);
+
+  const handleWindowFocus = useCallback(() => {
+    if (onBlur) {
+      onBlur();
+    }
+  }, [onBlur]);
+
+  const handleUploadClickWithBlur = useCallback(() => {
     fileInputRef.current?.click();
-  }, []);
+
+    const handleFocus = () => {
+      handleWindowFocus();
+      window.removeEventListener('focus', handleFocus);
+    };
+
+    setTimeout(() => {
+      window.addEventListener('focus', handleFocus);
+    }, 100);
+  }, [handleWindowFocus]);
 
   const getPreviewUrl = useCallback(() => {
     if (!value) return null;
@@ -131,8 +154,7 @@ const FileUploadField: React.FC<FileUploadFieldProps> = ({
         <Button
           variant="outlined"
           startIcon={<CloudUpload />}
-          onClick={handleUploadClick}
-          onBlur={onBlur}
+          onClick={handleUploadClickWithBlur}
           disabled={disabled}
           sx={STYLES.uploadButton}
         >

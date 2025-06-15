@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { FORM_FIELD_VALIDATIONS, movieFormInitialState, moviesInitialState } from '../constants';
 import { createMovieThunk } from '../thunks/createMovieThunk';

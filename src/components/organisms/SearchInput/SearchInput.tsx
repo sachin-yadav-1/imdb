@@ -9,7 +9,7 @@ interface SearchOption {
   [key: string]: any;
 }
 
-interface SearchInputProps {
+interface SearchComponentProps {
   name: string;
   label: string;
   value?: SearchOption | SearchOption[] | null;
@@ -24,11 +24,12 @@ interface SearchInputProps {
   onSearch: (searchValue: string, fieldName: string) => void;
   onInputValueChange: (searchValue: string, fieldName: string) => void;
   onChange?: (fieldName: string, value: SearchOption | SearchOption[] | null) => void;
+  onBlur?: (fieldName: string) => void;
   getOptionLabel?: (option: SearchOption) => string;
   sx?: any;
 }
 
-const SearchInput: React.FC<SearchInputProps> = ({
+const SearchComponent: React.FC<SearchComponentProps> = ({
   name,
   label,
   value,
@@ -43,6 +44,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
   onChange,
   onCreateButtonClick,
   onInputValueChange,
+  onBlur,
   getOptionLabel = (option) => option.name || '',
   sx,
 }) => {
@@ -66,6 +68,12 @@ const SearchInput: React.FC<SearchInputProps> = ({
     },
     [name, onChange]
   );
+
+  const handleBlur = useCallback(() => {
+    if (onBlur) {
+      onBlur(name);
+    }
+  }, [name, onBlur]);
 
   const debouncedSearch = useMemo(
     () =>
@@ -99,10 +107,11 @@ const SearchInput: React.FC<SearchInputProps> = ({
           error={error}
           createButtonText={createButtonText}
           onCreateButtonClick={onCreateButtonClick}
+          onBlur={handleBlur}
         />
       )}
     />
   );
 };
 
-export default memo(SearchInput);
+export default memo(SearchComponent);

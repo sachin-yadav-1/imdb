@@ -1,4 +1,5 @@
 import type { MovieFormState, MoviesInitialState, Validate } from './types';
+import { isEmpty } from 'lodash';
 
 export const movieFormInitialState: MovieFormState = {
   name: {
@@ -78,7 +79,7 @@ export const FORM_FIELD_VALIDATIONS: Record<keyof Omit<MovieFormState, 'isValid'
   },
   producer: {
     validate: (producer: MovieFormState['producer']) => {
-      if (!producer.selected) {
+      if (isEmpty(producer.selected)) {
         return { valid: false, error: 'Producer is required' };
       }
 
@@ -109,9 +110,10 @@ export const FORM_FIELD_VALIDATIONS: Record<keyof Omit<MovieFormState, 'isValid'
   },
   poster: {
     validate: (poster: MovieFormState['poster']) => {
-      // if (!poster) {
-      //   return { valid: false, error: 'Poster is required' };
-      // }
+
+      if (!poster.value) {
+        return { valid: false, error: 'Poster is required' };
+      }
       return { valid: true, error: '' };
     },
   },

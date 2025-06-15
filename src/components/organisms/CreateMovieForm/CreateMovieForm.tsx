@@ -166,10 +166,17 @@ const CreateMovieForm: React.FC = () => {
     handleFieldChange({ target: { value: inputValue, name, dataset: { type: 'none' } } });
   }, []);
 
+  const handleSearchFieldBlur = useCallback(
+    (fieldName: string) => {
+      dispatch(validateFormField({ key: fieldName as keyof MovieFormState }));
+    },
+    [dispatch]
+  );
+
   const handleCreateMovie = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      
+
       dispatch(validateForm({ formTypeKey: 'createForm' }));
 
       if (!isFormValid) {
@@ -299,6 +306,7 @@ const CreateMovieForm: React.FC = () => {
           onChange={handleProducerSelection}
           onInputValueChange={onInputValueChange}
           onSearch={handleProducerSearch}
+          onBlur={handleSearchFieldBlur}
           getOptionLabel={(option) => option.name || ''}
           error={formData.producerError}
         />
@@ -317,6 +325,7 @@ const CreateMovieForm: React.FC = () => {
           onChange={handleActorSelection}
           onInputValueChange={onInputValueChange}
           onSearch={handleActorSearch}
+          onBlur={handleSearchFieldBlur}
           getOptionLabel={(option) => option.name || ''}
           error={formData.actorsError}
         />
