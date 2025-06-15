@@ -14,12 +14,11 @@ import {
 import { createSelector } from '@reduxjs/toolkit';
 import { memo, useCallback } from 'react';
 import { useSelector } from 'react-redux';
+import type { CreatePersonFormState, FormFieldType } from '../../../common/types';
 import { closeCreateProducerModal } from '../../../store/common/slices';
 import { useAppDispatch } from '../../../store/hooks';
-import type { FormFieldType } from '../../../store/movies/types';
 import { resetProducerForm, updateFormData, validateFormField } from '../../../store/producers/slices';
 import createProducerThunk from '../../../store/producers/thunks/createProducerThunk';
-import type { CreateProducerFormState } from '../../../store/producers/types';
 import type { RootState } from '../../../store/types';
 import Button from '../../atoms/Button';
 import FormField from '../../molecules/FormField';
@@ -86,14 +85,14 @@ const CreateProducerForm: React.FC<CreateProducerFormProps> = ({ open, onClose }
   const createActorLoading = useSelector((state: RootState) => state.producers.loading.create) || false;
 
   const handleFieldChange = useCallback((e: React.ChangeEvent<HTMLInputElement> | CustomEvent) => {
-    const key = e.target.name as keyof CreateProducerFormState;
+    const key = e.target.name as keyof CreatePersonFormState;
     const type: FormFieldType = (e.target.dataset?.type as FormFieldType) || 'none';
     const value = e.target.value || '';
     dispatch(updateFormData({ key, value, type }));
   }, []);
 
   const handleFieldBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
-    const key = e.target.name as keyof CreateProducerFormState;
+    const key = e.target.name as keyof CreatePersonFormState;
     dispatch(validateFormField({ key }));
   }, []);
 

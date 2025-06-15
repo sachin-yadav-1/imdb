@@ -1,14 +1,14 @@
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { memo, useCallback } from 'react';
 import { useSelector } from 'react-redux';
-import { useAppDispatch } from '../../../store/hooks';
-import { updateSignupFormField, validateSignupField, resetSignupForm } from '../../../store/auth/slices';
+import useNavigation from '../../../common/hooks/useNavigation';
+import { resetSignupForm, updateSignupFormField, validateSignupField } from '../../../store/auth/slices';
 import { signupThunk } from '../../../store/auth/thunks/signupThunk';
 import type { SignupFormState } from '../../../store/auth/types';
+import { useAppDispatch } from '../../../store/hooks';
 import type { RootState } from '../../../store/types';
 import Button from '../../atoms/Button';
 import FormField from '../../molecules/FormField';
-import useNavigation from '../../../common/hooks/useNavigation';
 
 const STYLES = {
   root: {

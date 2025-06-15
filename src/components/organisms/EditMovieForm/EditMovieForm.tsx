@@ -3,18 +3,19 @@ import { createSelector } from '@reduxjs/toolkit';
 import { memo, useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import useNavigation from '../../../common/hooks/useNavigation';
+import type { FormFieldType } from '../../../common/types';
 import searchActorsThunk from '../../../store/actors/thunks/searchActorsThunk';
 import type { Actor } from '../../../store/actors/types';
 import { useAppDispatch } from '../../../store/hooks';
 import { resetForm, updateFormData, validateForm, validateFormField } from '../../../store/movies/slices';
 import { updateMovieThunk } from '../../../store/movies/thunks/updateMovieThunk';
-import type { FormFieldType, MovieFormState } from '../../../store/movies/types';
+import type { MovieFormState } from '../../../store/movies/types';
 import searchProducersThunk from '../../../store/producers/thunks/searchProducersThunk';
 import type { RootState } from '../../../store/types';
 import Button from '../../atoms/Button';
 import FileUploadField from '../../molecules/FileUploadField';
 import FormField from '../../molecules/FormField';
-import SearchInput from '../../molecules/SearchInput/SearchInput';
+import SearchInput from '../../molecules/SearchInput';
 
 const STYLES = {
   root: {

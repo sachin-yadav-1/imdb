@@ -1,4 +1,5 @@
-import type { MovieFormState, MoviesInitialState, Validate } from './types';
+import type { Validate } from '../../common/types';
+import type { MovieFormState, MoviesInitialState } from './types';
 import { isEmpty } from 'lodash';
 
 export const movieFormInitialState: MovieFormState = {
@@ -110,7 +111,6 @@ export const FORM_FIELD_VALIDATIONS: Record<keyof Omit<MovieFormState, 'isValid'
   },
   poster: {
     validate: (poster: MovieFormState['poster']) => {
-
       if (!poster.value) {
         return { valid: false, error: 'Poster is required' };
       }

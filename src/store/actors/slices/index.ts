@@ -1,8 +1,10 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import { ACTOR_FORM_VALIDATIONS, actorsInitialState, personFormInitialState } from '../constants';
+import type { CreatePersonFormState, FormFieldType } from '../../../common/types';
+import { PERSON_FORM_VALIDATIONS } from '../../../common/utils/validations';
+import { actorsInitialState, personFormInitialState } from '../constants';
 import createActorThunk from '../thunks/createActorThunk';
 import searchActorsThunk from '../thunks/searchActorsThunk';
-import type { Actor, CreateActorFormState, FormFieldType } from '../types';
+import type { Actor } from '../types';
 
 const actorsSlice = createSlice({
   name: 'actors',
@@ -28,7 +30,7 @@ const actorsSlice = createSlice({
     updateFormData(
       state,
       action: PayloadAction<{
-        key: keyof CreateActorFormState;
+        key: keyof CreatePersonFormState;
         value: any | any[];
         type?: FormFieldType;
       }>
@@ -48,11 +50,11 @@ const actorsSlice = createSlice({
       }
     },
 
-    validateFormField(state, action: PayloadAction<{ key: keyof CreateActorFormState }>) {
+    validateFormField(state, action: PayloadAction<{ key: keyof CreatePersonFormState }>) {
       const { key } = action.payload;
       if (!key) return;
 
-      const validator = ACTOR_FORM_VALIDATIONS[key].validate;
+      const validator = PERSON_FORM_VALIDATIONS[key].validate;
       const { valid, error } = validator(state.createForm[key]);
       if (!valid) {
         state.createForm[key].error = error;

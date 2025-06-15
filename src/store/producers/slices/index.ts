@@ -1,8 +1,10 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import { personFormInitialState, PRODUCER_FORM_VALIDATIONS, producersInitialState } from '../constants';
+import type { CreatePersonFormState, FormFieldType } from '../../../common/types';
+import { PERSON_FORM_VALIDATIONS } from '../../../common/utils/validations';
+import { personFormInitialState, producersInitialState } from '../constants';
 import createProducerThunk from '../thunks/createProducerThunk';
 import searchProducersThunk from '../thunks/searchProducersThunk';
-import type { CreateProducerFormState, FormFieldType, Producer } from '../types';
+import type { Producer } from '../types';
 
 const producersSlice = createSlice({
   name: 'producers',
@@ -17,7 +19,7 @@ const producersSlice = createSlice({
     updateFormData(
       state,
       action: PayloadAction<{
-        key: keyof CreateProducerFormState;
+        key: keyof CreatePersonFormState;
         value: any | any[];
         type?: FormFieldType;
       }>
@@ -37,11 +39,11 @@ const producersSlice = createSlice({
       }
     },
 
-    validateFormField(state, action: PayloadAction<{ key: keyof CreateProducerFormState }>) {
+    validateFormField(state, action: PayloadAction<{ key: keyof CreatePersonFormState }>) {
       const { key } = action.payload;
       if (!key) return;
 
-      const validator = PRODUCER_FORM_VALIDATIONS[key].validate;
+      const validator = PERSON_FORM_VALIDATIONS[key].validate;
       const { valid, error } = validator(state.createForm[key]);
       if (!valid) {
         state.createForm[key].error = error;

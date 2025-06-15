@@ -19,12 +19,6 @@ export interface MovieWithActorsAndProducers extends Movie {
   }>;
 }
 
-export interface FormFieldValue {
-  value: string | File | null;
-  error: string;
-  selected?: any | any[];
-}
-
 export interface MovieFormState {
   name: FormFieldValue;
   plot: FormFieldValue;
@@ -34,12 +28,6 @@ export interface MovieFormState {
   poster: FormFieldValue;
   isValid?: boolean;
 }
-
-export type FormFieldType = 'select' | 'multi-select' | 'file' | 'none';
-
-export type Validate = {
-  validate: (val: any) => { valid: boolean; error: string };
-};
 
 export interface MoviesInitialState {
   entities: Record<number, Movie>;
@@ -65,3 +53,5 @@ export interface MoviesInitialState {
   createForm: MovieFormState;
   editForm: MovieFormState;
 }
+
+type FormTypeKey = 'createForm' | 'editForm';

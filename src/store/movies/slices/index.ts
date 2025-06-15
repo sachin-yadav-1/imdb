@@ -5,9 +5,7 @@ import { createMovieThunk } from '../thunks/createMovieThunk';
 import { fetchMoviesPaginatedThunk } from '../thunks/fetchPaginatedMoviesThunk';
 import { fetchSingleMovieThunk } from '../thunks/fetchSingleMovieThunk';
 import { updateMovieThunk } from '../thunks/updateMovieThunk';
-import type { FormFieldType, Movie, MovieFormState } from '../types';
-
-type FormTypeKey = 'createForm' | 'editForm';
+import type { FormFieldType, FormTypeKey, Movie, MovieFormState } from '../types';
 
 const moviesSlice = createSlice({
   name: 'movies',
