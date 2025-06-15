@@ -9,6 +9,7 @@ const STYLES = {
     display: 'flex',
     flexDirection: 'column',
     gap: '2rem',
+    alignItems: 'center',
   },
 };
 
