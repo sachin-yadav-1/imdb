@@ -11,6 +11,7 @@ const STYLES = {
     gap: '2rem',
     justifyContent: 'center',
     alignItems: 'center',
+    width: '100%',
   },
 };
 
@@ -31,7 +32,12 @@ const MoviesPage = () => {
 
   return (
     <Box sx={STYLES.root}>
-      <Box sx={{ minHeight: loading ? '60vh' : 'fit-content' }}>
+      <Box
+        sx={{
+          minHeight: loading ? '60vh' : 'fit-content',
+          width: '100%',
+        }}
+      >
         {loading.fetch && <CircularProgress size={20} />}
 
         {error.fetch && !loading.fetch && (
