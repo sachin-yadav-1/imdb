@@ -9,9 +9,6 @@ const STYLES = {
     display: 'flex',
     flexDirection: 'column',
     gap: '2rem',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
   },
 };
 
@@ -32,12 +29,7 @@ const MoviesPage = () => {
 
   return (
     <Box sx={STYLES.root}>
-      <Box
-        sx={{
-          minHeight: loading ? '60vh' : 'fit-content',
-          width: '100%',
-        }}
-      >
+      <Box sx={{ minHeight: loading ? '60vh' : 'fit-content' }}>
         {loading.fetch && <CircularProgress size={20} />}
 
         {error.fetch && !loading.fetch && (

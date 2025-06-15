@@ -13,8 +13,6 @@ const STYLES = {
     display: 'flex',
     flexDirection: 'column',
     gap: '2rem',
-    justifyContent: "center",
-    alignItems: "center"
   },
   text: {
     fontSize: '1.6rem',
