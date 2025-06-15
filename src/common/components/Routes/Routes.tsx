@@ -5,6 +5,7 @@ import AddMoviePage from '../../../components/pages/AddMoviePage';
 import EditMoviePage from '../../../components/pages/EditMoviePage';
 import MoviesPage from '../../../components/pages/MoviesPage';
 import Route from '../Route/Route';
+import ProtectedRoute from '../../../components/molecules/ProtectedRoute';
 
 const STYLES = {
   container: {
@@ -16,9 +17,10 @@ const Routes = () => {
   return (
     <Container maxWidth="lg" sx={STYLES.container}>
       <Route path="/" element={<MoviesPage />} />
-
-      <Route path="/add-movie" element={<AddMoviePage />} />
-      <Route path="/edit-movie/:id" element={<EditMoviePage />} />
+      <ProtectedRoute>
+        <Route path="/add-movie" element={<AddMoviePage />} />
+        <Route path="/edit-movie/:id" element={<EditMoviePage />} />
+      </ProtectedRoute>
     </Container>
   );
 };

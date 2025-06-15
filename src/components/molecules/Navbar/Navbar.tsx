@@ -10,11 +10,6 @@ import type { RootState } from '../../../store/types';
 import NavItem from '../../atoms/NavItem';
 import UserProfile from '../../organisms/UserProfile';
 
-const PAGES = [
-  { label: 'Movies', path: '/' },
-  { label: 'Create Movie', path: '/add-movie' },
-];
-
 const STYLES = {
   nav: {
     display: 'flex',
@@ -44,15 +39,11 @@ const Navbar = () => {
           </Link>
 
           <Box sx={STYLES.rightSection}>
-            {isAuthenticated && (
-              <Box sx={STYLES.navItemContainer}>
-                {PAGES.map((page) => (
-                  <NavItem key={page.path} label={page.label} path={page.path} />
-                ))}
-              </Box>
-            )}
-
-            {isAuthenticated && <UserProfile />}
+            <Box sx={STYLES.navItemContainer}>
+              <NavItem key="movies" label="Movies" path="/" />
+              {isAuthenticated && <NavItem key="create-movie" label="Create New Movie" path="/add-movie" />}
+              {isAuthenticated && <UserProfile />}
+            </Box>
           </Box>
         </Toolbar>
       </Container>
